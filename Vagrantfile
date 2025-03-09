@@ -1,13 +1,11 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Configuration des ressources VM
 VM_NAME = "owasp-lab-environment"
-VM_IP = "192.168.33.10"
+VM_IP = "192.168.33.11"
 VM_MEMORY = 4096
-VM_CPUS = 2
+VM_CPUS = 4
 
-# Ports à rediriger
 FORWARDED_PORTS = {
   9000 => 9000,   # SonarQube
   8080 => 8080,   # Burp Suite
@@ -18,54 +16,60 @@ FORWARDED_PORTS = {
   8834 => 8834    # Nessus
 }
 
+# Détection d'architecture pour Apple Silicon
+def arm64?
+  arch = `uname -m`.strip
+  return true if arch == "arm64"
+  if RUBY_PLATFORM.include?("darwin")
+    proc_translated = `sysctl -in sysctl.proc_translated 2>/dev/null`.strip
+    return true if proc_translated == "0"
+  end
+  return false
+end
+
 Vagrant.configure("2") do |config|
-  # Utiliser Kali Linux comme box de base
-  config.vm.box = "kalilinux/rolling"
+  config.vm.boot_timeout = 900
+  config.vm.graceful_halt_timeout = 300
 
-  # Configuration pour VMware
+  if arm64?
+    config.vm.box = "mdiazn80/kali-arm64"
+    config.vm.box_version = "2024.2"
+    puts "Detected ARM64 architecture, using Kali ARM64 box"
+  else
+    config.vm.box = "kalilinux/rolling"
+    puts "Detected x86_64 architecture, using standard Kali box"
+  end
+
+  # Provider-specific configurations
   config.vm.provider "vmware_desktop" do |vmware|
-    # Activer l'interface graphique
     vmware.gui = true
-
-    # Allouer les ressources
     vmware.memory = VM_MEMORY
     vmware.cpus = VM_CPUS
     vmware.vmx["displayName"] = VM_NAME
-
-    # Options supplémentaires pour VMware
     vmware.vmx["memsize"] = VM_MEMORY
     vmware.vmx["numvcpus"] = VM_CPUS
-
-    # Optimisation de l'affichage
-    vmware.vmx["svga.autodetect"] = "TRUE"
-    vmware.vmx["svga.vramSize"] = "128MB"
   end
 
-  # Configuration pour VirtualBox (alternative)
-  config.vm.provider "virtualbox" do |vb|
-    # Activer l'interface graphique
-    vb.gui = true
+  config.vm.provider "parallels" do |prl|
+    prl.memory = VM_MEMORY
+    prl.cpus = VM_CPUS
+    prl.name = VM_NAME
+    prl.customize ["set", :id, "--startup-view", "window"]
+    prl.update_guest_tools = true
+  end
 
-    # Allouer les ressources
+  config.vm.provider "virtualbox" do |vb|
+    vb.gui = true
     vb.memory = VM_MEMORY
     vb.cpus = VM_CPUS
     vb.name = VM_NAME
-
-    # Performance optimisations pour VirtualBox
     vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
     vb.customize ["modifyvm", :id, "--ioapic", "on"]
-
-    # Optimisation de l'affichage
-    vb.customize ["modifyvm", :id, "--vram", "128"]
-    vb.customize ["modifyvm", :id, "--graphicscontroller", "vboxsvga"]
-    vb.customize ["modifyvm", :id, "--accelerate3d", "on"]
   end
 
-  # Configuration réseau
   config.vm.network "private_network", ip: VM_IP
   config.vm.hostname = "owasp-lab"
 
-  # Redirection de ports
   FORWARDED_PORTS.each do |guest, host|
     config.vm.network "forwarded_port", guest: guest, host: host
   end
@@ -75,42 +79,44 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder "exercises/", "/home/vagrant/exercises", create: true
   config.vm.synced_folder "configs/", "/home/vagrant/configs", create: true
 
-  # Installation des additions invités pour VirtualBox
+  # Désactiver les redémarrages automatiques des services avant toute installation
   config.vm.provision "shell", inline: <<-SHELL
-    # Mise à jour du système
-    apt-get update
+    # Configuration pour éviter les blocages pendant l'installation des paquets
+    export DEBIAN_FRONTEND=noninteractive
 
-    # Installation des outils pour l'environnement graphique et les additions invités
-    apt-get install -y dkms build-essential linux-headers-$(uname -r)
+    # Désactiver les redémarrages de services pendant le provisionnement
+    echo '#!/bin/sh' > /usr/sbin/policy-rc.d
+    echo 'exit 101' >> /usr/sbin/policy-rc.d
+    chmod +x /usr/sbin/policy-rc.d
 
-    # Installation des additions invités selon le provider
-    if [ -d "/opt/VBoxGuestAdditions" ]; then
-      # VirtualBox détecté
-      apt-get install -y virtualbox-guest-x11
-    elif [ -d "/usr/lib/vmware-tools" ] || [ -d "/usr/lib/open-vm-tools" ]; then
-      # VMware détecté
-      apt-get install -y open-vm-tools open-vm-tools-desktop
-    fi
+    # Configuration de apt pour éviter les questions interactives
+    echo 'DPkg::options { "--force-confdef"; "--force-confold"; }' > /etc/apt/apt.conf.d/local
+    echo 'Dpkg::Use-Pty "0";' >> /etc/apt/apt.conf.d/local
 
-    # Assurez-vous que l'interface graphique démarre correctement
-    systemctl enable lightdm
+    # Désactiver les redémarrages automatiques de services
+    mkdir -p /etc/needrestart/conf.d
+    echo "\$nrconf{restart} = 'a';" > /etc/needrestart/conf.d/99-vagrant-disable.conf
 
-    # Permettre à tous les utilisateurs de démarrer l'interface graphique
-    if [ -f "/etc/X11/Xwrapper.config" ]; then
-      sed -i 's/allowed_users=.*$/allowed_users=anybody/' /etc/X11/Xwrapper.config
-    fi
-
-    echo "Installation des additions invités terminée."
+    echo "Configuration du système pour éviter les blocages pendant le provisionnement..."
   SHELL
 
-  # Provisionnement principal
   config.vm.provision "shell", path: "scripts/provision.sh"
+
+  # Restaurer le comportement normal des services après le provisionnement
+  config.vm.provision "shell", inline: <<-SHELL
+    # Réactiver les redémarrages automatiques des services
+    rm -f /usr/sbin/policy-rc.d
+    rm -f /etc/apt/apt.conf.d/local
+    rm -f /etc/needrestart/conf.d/99-vagrant-disable.conf
+
+    echo "Provisionnement terminé avec succès."
+  SHELL
 
   # Message post-installation
   config.vm.post_up_message = <<-MESSAGE
   ╔═══════════════════════════════════════════════════════════════════╗
   ║                                                                   ║
-  ║   Environnement de Lab OWASP Top 10 sur Kali Linux               ║
+  ║   Environnement de Lab OWASP Top 10 sur Kali Linux                ║
   ║                                                                   ║
   ╚═══════════════════════════════════════════════════════════════════╝
 

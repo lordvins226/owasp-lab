@@ -8,14 +8,14 @@ export TOOLS_DIR="$LAB_HOME/tools"
 export LABS_DIR="$LAB_HOME/labs"
 export GUIDES_DIR="$LAB_HOME/docs/guides"
 
-# Mise à jour du système Kali
-echo "Mise à jour des paquets Kali Linux..."
+# Configuration pour éviter les blocages pendant la mise à jour
+export DEBIAN_FRONTEND=noninteractive
+export NEEDRESTART_MODE=a
 apt-get update
-apt-get upgrade -y
+#apt-get dist-upgrade -y
 
-# Installation des dépendances de base
 echo "Installation des dépendances de base..."
-# La plupart des outils de sécurité sont déjà installés sur Kali
+
 apt-get install -y \
     docker.io \
     docker-compose \
@@ -42,7 +42,7 @@ mkdir -p $LABS_DIR/java-app
 mkdir -p $LABS_DIR/mobile
 mkdir -p $LABS_DIR/binaries
 mkdir -p $GUIDES_DIR
-chown -R vagrant:vagrant $LAB_HOME
+#chown -R vagrant:vagrant $LAB_HOME
 
 # Exécution des scripts d'installation
 echo "Étape 1: Installation des applications vulnérables"

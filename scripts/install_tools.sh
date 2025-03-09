@@ -3,20 +3,8 @@
 echo "Installation des outils de sécurité pour les labs OWASP Top 10 sur Kali Linux..."
 
 # Créer un répertoire pour les outils
+mkdir -p /home/vagrant/tools
 cd /home/vagrant/tools
-
-# Vérification des outils déjà présents dans Kali Linux
-echo "Vérification des outils natifs de Kali Linux..."
-TOOLS_TO_CHECK=("burpsuite" "zaproxy" "sqlmap")
-for tool in "${TOOLS_TO_CHECK[@]}"
-do
-  if command -v $tool >/dev/null 2>&1; then
-    echo "$tool est déjà installé sur Kali."
-  else
-    echo "$tool n'est pas disponible, nous allons l'installer."
-    apt-get install -y $tool
-  fi
-done
 
 # 1. SonarQube via Docker (prioritaire)
 echo "Installation de SonarQube..."
@@ -194,11 +182,72 @@ echo "3. Sélectionnez un binaire et lancez l'analyse"
 EOF
 chmod +x /home/vagrant/tools/ghidra/create-project.sh
 
-# 5. Configuration de MobSF est déjà faite dans install_apps.sh
-echo "Configuration de MobSF (déjà installée via Docker)..."
+# 5. Configuration de MobSF
+echo "Configuration de MobSF via Docker..."
+# Configuration Docker pour MobSF
+mkdir -p /home/vagrant/labs/apps
+cd /home/vagrant/labs/apps
+cat > docker-compose-mobsf.yml << 'EOF'
+version: '3'
+services:
+  mobsf:
+    image: opensecurity/mobile-security-framework-mobsf
+    container_name: mobsf
+    ports:
+      - "8000:8000"
+    volumes:
+      - /home/vagrant/data/mobsf:/home/mobsf/.MobSF
+    restart: unless-stopped
+EOF
+
+# S'assurer que le répertoire de données existe
+mkdir -p /home/vagrant/data/mobsf
+
+# Téléchargement parallèle de l'image Docker
+docker pull opensecurity/mobile-security-framework-mobsf &
+
+# Configuration de scripts d'automatisation pour MobSF
+mkdir -p /home/vagrant/tools/mobsf-scripts
+cat > /home/vagrant/tools/mobsf-scripts/scan-apk.sh << 'EOF'
+#!/bin/bash
+# Script pour analyser automatiquement un APK avec MobSF
+# Usage: ./scan-apk.sh [CHEMIN_APK]
+
+APK_PATH=${1:-"/home/vagrant/labs/mobile/UnCrackable-Level1.apk"}
+MOBSF_URL="http://localhost:8000"
+
+echo "Tentative d'analyse automatique de l'APK: $APK_PATH"
+echo "Assurez-vous que MobSF est en cours d'exécution sur $MOBSF_URL"
+echo ""
+echo "Procédure manuelle:"
+echo "1. Ouvrez $MOBSF_URL dans votre navigateur"
+echo "2. Téléversez le fichier APK"
+echo "3. Examinez les résultats d'analyse"
+echo ""
+echo "Note: L'API REST de MobSF pourrait être utilisée pour automatiser cette procédure"
+echo "Consultez la documentation MobSF pour plus d'informations sur l'API"
+EOF
+chmod +x /home/vagrant/tools/mobsf-scripts/scan-apk.sh
+
+# 6. Installation d'outils supplémentaires utiles
+
+# SQLMap pour les tests d'injection SQL
+echo "Installation de SQLMap..."
+# SQLMap est généralement déjà disponible sur Kali
+if ! command -v sqlmap >/dev/null 2>&1; then
+  git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git
+  echo 'alias sqlmap="python3 /home/vagrant/tools/sqlmap/sqlmap.py"' >> /home/vagrant/.bashrc
+  ln -s /home/vagrant/tools/sqlmap/sqlmap.py /usr/local/bin/sqlmap
+  chmod +x /usr/local/bin/sqlmap
+fi
 
 # 7. Téléchargement de binaires et applications pour les tests
 echo "Téléchargement d'échantillons pour les tests..."
+
+# Création des répertoires nécessaires s'ils n'existent pas
+mkdir -p /home/vagrant/labs/java-app
+mkdir -p /home/vagrant/labs/mobile
+mkdir -p /home/vagrant/labs/binaries
 
 # Application Java vulnérable pour SonarQube
 cd /home/vagrant/labs/java-app
@@ -220,6 +269,13 @@ chmod +x lab2A
 echo "Correction des permissions..."
 chown -R vagrant:vagrant /home/vagrant/tools
 chown -R vagrant:vagrant /home/vagrant/labs
+chown -R vagrant:vagrant /home/vagrant/data
+
+# Finalisation de l'installation de MobSF
+cd /home/vagrant/labs/apps
+# Attente de la fin du téléchargement de l'image Docker
+wait
+docker-compose -f docker-compose-mobsf.yml up -d
 
 echo "Installation des outils terminée sur Kali Linux."
-echo "Outils principaux configurés: SonarQube, Burp Suite, OWASP ZAP, Ghidra, MobSF"
+echo "Outils principaux configurés: SonarQube, Burp Suite, Nessus Expert, Ghidra, MobSF"
