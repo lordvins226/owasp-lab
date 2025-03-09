@@ -63,87 +63,15 @@ services:
     restart: unless-stopped
 EOF
 
-# ELK Stack
-echo "Configuration d'ELK Stack pour les exercices de logging et monitoring..."
-cat > docker-compose-elk.yml << 'EOF'
-version: '3'
-services:
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
-    container_name: elasticsearch
-    environment:
-      - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ports:
-      - "9200:9200"
-    volumes:
-      - esdata:/usr/share/elasticsearch/data
-    restart: unless-stopped
-
-  logstash:
-    image: docker.elastic.co/logstash/logstash:7.17.0
-    container_name: logstash
-    ports:
-      - "5044:5044"
-    volumes:
-      - /home/vagrant/data/logstash:/etc/logstash/conf.d
-    depends_on:
-      - elasticsearch
-    restart: unless-stopped
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.17.0
-    container_name: kibana
-    ports:
-      - "5601:5601"
-    depends_on:
-      - elasticsearch
-    restart: unless-stopped
-
-volumes:
-  esdata:
-EOF
-
-# Création du répertoire pour les données Logstash
-mkdir -p /home/vagrant/data/logstash
 mkdir -p /home/vagrant/data/mobsf
 
-# Configuration de base pour Logstash
-cat > /home/vagrant/data/logstash/logstash.conf << 'EOF'
-input {
-  beats {
-    port => 5044
-  }
-}
-
-filter {
-  if [type] == "security" {
-    grok {
-      match => { "message" => "%{COMBINEDAPACHELOG}" }
-    }
-    date {
-      match => [ "timestamp" , "dd/MMM/yyyy:HH:mm:ss Z" ]
-    }
-  }
-}
-
-output {
-  elasticsearch {
-    hosts => ["elasticsearch:9200"]
-    index => "%{[@metadata][beat]}-%{+YYYY.MM.dd}"
-  }
-}
-EOF
 
 # Téléchargement parallèle des images Docker (optimisation)
 echo "Téléchargement des images Docker en parallèle..."
 docker pull webgoat/webgoat &
 docker pull bkimminich/juice-shop &
 docker pull vulnerables/web-dvwa &
-docker pull opensecurity/mobile-security-framework-mobsf &
-docker pull docker.elastic.co/elasticsearch/elasticsearch:7.17.0 &
-docker pull docker.elastic.co/logstash/logstash:7.17.0 &
-docker pull docker.elastic.co/kibana/kibana:7.17.0 &
+docker pull opensecurity/mobile-security-framework-mobsf
 wait
 
 # Démarrage des applications
@@ -152,7 +80,6 @@ docker-compose -f docker-compose-webgoat.yml up -d
 docker-compose -f docker-compose-juiceshop.yml up -d
 docker-compose -f docker-compose-dvwa.yml up -d
 docker-compose -f docker-compose-mobsf.yml up -d
-docker-compose -f docker-compose-elk.yml up -d
 
 # Correction des permissions
 chown -R vagrant:vagrant /home/vagrant/data
