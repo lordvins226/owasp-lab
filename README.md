@@ -1,13 +1,14 @@
 # Environnement de Lab pour OWASP Top 10
 
-Ce dépôt contient les fichiers nécessaires pour créer un environnement Vagrant permettant de réaliser les exercices pratiques basés sur l'OWASP Top 10.
+Ce dépôt contient les fichiers nécessaires pour créer un environnement Vagrant basé sur Kali Linux permettant de réaliser les exercices pratiques sur l'OWASP Top 10.
 
 ## Prérequis
 
-- [VirtualBox](https://www.virtualbox.org/wiki/Downloads) (version 6.1 ou supérieure)
+- [VMware Workstation Pro/Player](https://www.vmware.com/products/workstation-pro.html) ou [VirtualBox](https://www.virtualbox.org/wiki/Downloads) (un seul à la fois)
 - [Vagrant](https://www.vagrantup.com/downloads) (version 2.2.19 ou supérieure)
 - Au moins 8 Go de RAM disponible
 - Au moins 20 Go d'espace disque libre
+- Pour Nessus Expert: une licence commerciale de Tenable (téléchargement séparé)
 
 ## Installation
 
@@ -17,10 +18,16 @@ Ce dépôt contient les fichiers nécessaires pour créer un environnement Vagra
    cd owasp-top10-lab-environment
    ```
 
-2. Démarrez l'environnement Vagrant :
+2. Pour utiliser VMware (recommandé) :
    ```bash
-   vagrant up
+   vagrant up --provider=vmware_desktop
    ```
+
+   Pour utiliser VirtualBox (alternative) :
+   ```bash
+   vagrant up --provider=virtualbox
+   ```
+
    Cette commande peut prendre 15 à 30 minutes lors de la première exécution car elle télécharge et installe tous les outils et applications nécessaires.
 
 3. Une fois l'installation terminée, vous pouvez vous connecter à la VM :
@@ -46,19 +53,21 @@ Cette configuration de lab met l'accent sur cinq outils essentiels pour l'analys
 
 ### 2. Burp Suite (Tests de pénétration web)
 - **Description** : Outil complet pour l'interception, l'analyse et la manipulation du trafic HTTP/HTTPS
-- **Lancement** : `burp` ou `run-burp`
+- **Lancement** : Menu Applications > Web Application Analysis > burpsuite
+- **Alternative**: Commande `burpsuite` ou `burpsuite-lab`
 - **Utilisation typique** : Tests d'injection, analyse des contrôles d'accès, détection de vulnérabilités dans les applications web
 - **Guide** : `/home/vagrant/docs/guides/BurpSuite_Guide.md`
 
-### 3. OWASP ZAP (Alternative à Nessus)
-- **Description** : Proxy d'interception et scanner de vulnérabilités pour les applications web
-- **Lancement** : `zap` ou `/usr/local/bin/zap`
-- **Scan rapide** : `zap-scan [URL] [RAPPORT]`
-- **Guide** : `/home/vagrant/docs/guides/ZAP_Guide.md`
+### 3. Nessus Expert (Scans de vulnérabilités)
+- **Accès**: https://localhost:8834
+- **Gestion**: `nessus-start`, `nessus-stop`, `nessus-status`, `nessus-web`
+- **Note**: Nécessite une licence commerciale de Tenable
+- **Guide**: `/home/vagrant/docs/guides/Nessus_Guide.md`
 
 ### 4. Ghidra (Analyse de binaires)
 - **Description** : Outil d'ingénierie inverse pour l'analyse des binaires et la détection des implémentations cryptographiques faibles
-- **Lancement** : `ghidra`
+- **Lancement** : Menu Applications > Reverse Engineering > ghidra
+- **Alternative**: Commande `ghidra`
 - **Utilisation typique** : Analyse des implémentations cryptographiques, détection des vulnérabilités dans le code compilé
 - **Guide** : `/home/vagrant/docs/guides/Ghidra_Guide.md`
 
@@ -68,10 +77,11 @@ Cette configuration de lab met l'accent sur cinq outils essentiels pour l'analys
 - **Utilisation typique** : Analyse statique et dynamique d'applications Android/iOS, détection des vulnérabilités OWASP Mobile
 - **Guide** : `/home/vagrant/docs/guides/MobSF_Guide.md`
 
-### Applications vulnérables pour les tests
+## Applications vulnérables pour les tests
 
 - **WebGoat** : http://localhost:8081/WebGoat
 - **OWASP Juice Shop** : http://localhost:3000
+- **DVWA** : http://localhost:8888 (admin/password)
 
 ## Structure des exercices
 
@@ -79,14 +89,38 @@ Les exercices sont organisés selon les 10 catégories de l'OWASP Top 10. Pour c
 
 Le document complet des exercices est disponible dans la VM à l'emplacement :
 ```
-/home/vagrant/exercices_owasp_top_10.md
+/home/vagrant/exercises/exercices_owasp_top_10.md
 ```
 
 ## Commandes utiles
 
-- `start_services` : Démarrer tous les services
-- `stop_services` : Arrêter tous les services
+- `start_services` : Démarrer tous les services Docker
+- `stop_services` : Arrêter tous les services Docker
 - `status` : Afficher l'état des services Docker
+- `nessus-web` : Ouvrir l'interface web de Nessus dans le navigateur
+- `guides` : Lister les guides disponibles
+- `show-guide [nom]` : Afficher un guide spécifique (ex: `show-guide Nessus_Guide.md`)
+
+## Avantages de l'utilisation de Kali Linux
+
+- Nombreux outils de sécurité préinstallés
+- Environnement optimisé pour les tests de pénétration
+- Interface graphique adaptée à la sécurité
+- Compatibilité avec les outils professionnels
+
+## Installation de Nessus Expert
+
+Nessus Expert étant un outil commercial, son installation nécessite quelques étapes supplémentaires :
+
+1. Téléchargez le package d'installation depuis le site de Tenable : https://www.tenable.com/downloads/nessus
+2. Copiez le fichier .deb dans le répertoire `/home/vagrant/tools/nessus/` de la VM
+3. Dans la VM, exécutez le script d'installation :
+   ```bash
+   cd /home/vagrant/tools/nessus
+   ./install_nessus.sh
+   ```
+4. Suivez les instructions à l'écran pour terminer l'installation
+5. Accédez à l'interface web via https://localhost:8834 et activez votre licence
 
 ## Arrêt et suppression de l'environnement
 
@@ -105,14 +139,6 @@ Le document complet des exercices est disponible dans la VM à l'emplacement :
   vagrant destroy
   ```
 
-## Notes importantes
-
-- Certains outils comme Burp Suite fonctionnent mieux lorsqu'ils sont installés sur la machine hôte. Le fichier JAR est téléchargé dans la VM mais vous pouvez le copier sur votre machine hôte pour une meilleure expérience.
-- Pour les exercices impliquant des binaires (Ghidra), assurez-vous d'être connecté à la VM via SSH avec l'option de transfert X11 si vous souhaitez utiliser l'interface graphique :
-  ```bash
-  vagrant ssh -- -X
-  ```
-
 ## Dépannage
 
 - **Problème** : Les services Docker ne démarrent pas correctement.
@@ -123,6 +149,9 @@ Le document complet des exercices est disponible dans la VM à l'emplacement :
 
 - **Problème** : Performances lentes de la VM.
   **Solution** : Augmentez les ressources allouées (mémoire, CPU) dans le Vagrantfile.
+
+- **Problème** : Installation de Nessus échoue.
+  **Solution** : Vérifiez que vous avez bien copié le fichier .deb et que vous disposez d'une licence valide.
 
 ## Contribution
 
