@@ -152,11 +152,3 @@ Nessus Expert étant un outil commercial, son installation nécessite quelques �
 
 - **Problème** : Installation de Nessus échoue.
   **Solution** : Vérifiez que vous avez bien copié le fichier .deb et que vous disposez d'une licence valide.
-
-## Contribution
-
-N'hésitez pas à contribuer à ce projet en soumettant des pull requests pour améliorer les scripts, ajouter de nouveaux exercices ou corriger des bugs.
-
-## Licence
-
-Ce projet est distribué sous licence MIT. Voir le fichier LICENSE pour plus de détails.
