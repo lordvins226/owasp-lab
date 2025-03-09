@@ -12,22 +12,18 @@ Ce dépôt contient les fichiers nécessaires pour créer un environnement Vagra
 ## Installation
 
 1. Clonez ce dépôt sur votre machine :
-
    ```bash
    git clone https://github.com/votre-organisation/owasp-top10-lab-environment.git
    cd owasp-top10-lab-environment
    ```
 
 2. Démarrez l'environnement Vagrant :
-
    ```bash
    vagrant up
    ```
-
    Cette commande peut prendre 15 à 30 minutes lors de la première exécution car elle télécharge et installe tous les outils et applications nécessaires.
 
 3. Une fois l'installation terminée, vous pouvez vous connecter à la VM :
-
    ```bash
    vagrant ssh
    ```
@@ -43,35 +39,30 @@ Ce dépôt contient les fichiers nécessaires pour créer un environnement Vagra
 Cette configuration de lab met l'accent sur cinq outils essentiels pour l'analyse des vulnérabilités OWASP Top 10 :
 
 ### 1. SonarQube (Analyse statique de code)
-
 - **Description** : Détecte les vulnérabilités dans le code source via l'analyse statique
 - **Accès** : http://localhost:9000 (admin/admin)
 - **Utilisation typique** : Analyse de projets Java, JavaScript, Python pour détecter des injections, problèmes cryptographiques, etc.
 - **Guide** : `/home/vagrant/docs/guides/SonarQube_Guide.md`
 
 ### 2. Burp Suite (Tests de pénétration web)
-
 - **Description** : Outil complet pour l'interception, l'analyse et la manipulation du trafic HTTP/HTTPS
 - **Lancement** : `burp` ou `run-burp`
 - **Utilisation typique** : Tests d'injection, analyse des contrôles d'accès, détection de vulnérabilités dans les applications web
 - **Guide** : `/home/vagrant/docs/guides/BurpSuite_Guide.md`
 
 ### 3. OWASP ZAP (Alternative à Nessus)
-
 - **Description** : Proxy d'interception et scanner de vulnérabilités pour les applications web
 - **Lancement** : `zap` ou `/usr/local/bin/zap`
 - **Scan rapide** : `zap-scan [URL] [RAPPORT]`
 - **Guide** : `/home/vagrant/docs/guides/ZAP_Guide.md`
 
 ### 4. Ghidra (Analyse de binaires)
-
 - **Description** : Outil d'ingénierie inverse pour l'analyse des binaires et la détection des implémentations cryptographiques faibles
 - **Lancement** : `ghidra`
 - **Utilisation typique** : Analyse des implémentations cryptographiques, détection des vulnérabilités dans le code compilé
 - **Guide** : `/home/vagrant/docs/guides/Ghidra_Guide.md`
 
 ### 5. MobSF (Sécurité mobile)
-
 - **Description** : Framework d'analyse de sécurité pour applications mobiles
 - **Accès** : http://localhost:8000
 - **Utilisation typique** : Analyse statique et dynamique d'applications Android/iOS, détection des vulnérabilités OWASP Mobile
@@ -87,7 +78,6 @@ Cette configuration de lab met l'accent sur cinq outils essentiels pour l'analys
 Les exercices sont organisés selon les 10 catégories de l'OWASP Top 10. Pour chaque catégorie, des exercices pratiques sont proposés impliquant l'utilisation des différents outils installés.
 
 Le document complet des exercices est disponible dans la VM à l'emplacement :
-
 ```
 /home/vagrant/exercices_owasp_top_10.md
 ```
@@ -101,13 +91,11 @@ Le document complet des exercices est disponible dans la VM à l'emplacement :
 ## Arrêt et suppression de l'environnement
 
 - Pour suspendre la VM (économiser de la RAM) :
-
   ```bash
   vagrant suspend
   ```
 
 - Pour arrêter proprement la VM :
-
   ```bash
   vagrant halt
   ```

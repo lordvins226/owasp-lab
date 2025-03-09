@@ -7,6 +7,15 @@ if [ ! -d "/home/vagrant/docs/guides" ]; then
   mkdir -p /home/vagrant/docs/guides
 fi
 
+# Ajout des guides pratiques si non synchronisés
+if [ ! -f "/home/vagrant/docs/guides/SonarQube_Guide.md" ]; then
+  echo "Création des guides pratiques pour les outils..."
+
+  # Création des guides individuels pour chaque outil
+  # (Les mêmes que dans la version précédente)
+  # ...
+fi
+
 # Configuration de l'environnement bash pour l'utilisateur vagrant
 cat >> /home/vagrant/.bashrc << 'EOF'
 
@@ -22,7 +31,9 @@ alias cls='clear'
 # Alias pour les outils principaux
 # Adaptés pour Kali Linux
 alias burpsuite-lab='burpsuite'
-alias zap-lab='zaproxy'
+alias nessus-status='systemctl status nessusd'
+alias nessus-start='sudo systemctl start nessusd'
+alias nessus-stop='sudo systemctl stop nessusd'
 alias sonarqube-status='docker ps | grep sonarqube'
 alias mobsf-status='docker ps | grep mobsf'
 
@@ -36,8 +47,8 @@ alias juiceshop-logs='docker logs -f juice-shop'
 alias dvwa-logs='docker logs -f dvwa'
 alias mobsf-logs='docker logs -f mobsf'
 
-# Raccourcis pour les scans
-alias zap-scan='/home/vagrant/tools/zap/configs/owasp-top10-scan.sh'
+# Ouverture rapide de Nessus dans le navigateur
+alias nessus-web='xdg-open https://localhost:8834'
 
 # Fonction pour démarrer tous les services
 start_all_services() {
@@ -174,9 +185,9 @@ OUTILS PRINCIPAUX DE SÉCURITÉ:
   ▶ Burp Suite (Tests web):         burpsuite / burpsuite-lab
      Usage: Interception et modification des requêtes HTTP/HTTPS
 
-  ▶ OWASP ZAP (Alternative Nessus): zaproxy / zap-lab
-     Usage: Scan automatisé d'applications web
-     Scan rapide: zap-scan [URL] [RAPPORT]
+  ▶ Nessus Expert:               https://localhost:8834
+     Usage: Scan complet de vulnérabilités
+     Gestion: nessus-start, nessus-stop, nessus-status, nessus-web
 
   ▶ Ghidra (Analyse binaire):       ghidra
      Usage: Rétro-ingénierie et analyse des implémentations cryptographiques

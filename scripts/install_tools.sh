@@ -87,29 +87,74 @@ Kali Linux inclut déjà Burp Suite Community Edition.
 Consultez le guide complet dans `/home/vagrant/docs/guides/BurpSuite_Guide.md`
 EOF
 
-# 3. Configuration de OWASP ZAP (déjà disponible sur Kali)
-echo "Configuration de OWASP ZAP (natif de Kali)..."
-mkdir -p /home/vagrant/tools/zap/configs
-cat > /home/vagrant/tools/zap/configs/owasp-top10-scan.sh << 'EOF'
-#!/bin/bash
-# Script pour lancer un scan OWASP Top 10 automatisé avec ZAP
-# Usage: ./owasp-top10-scan.sh [URL_CIBLE] [FICHIER_SORTIE]
+# 3. Installation et configuration de Nessus Expert
+echo "Installation de Nessus Expert..."
+mkdir -p /home/vagrant/tools/nessus
 
-URL_CIBLE=${1:-"http://localhost:3000"}
-FICHIER_SORTIE=${2:-"/home/vagrant/zap-report.html"}
+# Téléchargement de Nessus (l'utilisateur devra fournir le fichier d'installation)
+cat > /home/vagrant/tools/nessus/README.md << 'EOF'
+# Installation de Nessus Expert
 
-echo "Lancement d'un scan OWASP Top 10 sur $URL_CIBLE"
-echo "Le rapport sera sauvegardé dans $FICHIER_SORTIE"
+## Prérequis
+Nessus Expert est un logiciel commercial qui nécessite une licence.
 
-zaproxy -cmd \
-  -quickurl "${URL_CIBLE}" \
-  -quickprogress \
-  -quickout "${FICHIER_SORTIE}" \
-  -quickformat html
+## Procédure d'installation manuelle
+1. Téléchargez le package d'installation depuis le site de Tenable: https://www.tenable.com/downloads/nessus
+2. Copiez le fichier .deb dans ce répertoire (/home/vagrant/tools/nessus/)
+3. Installez le package avec la commande:
+   ```
+   sudo dpkg -i Nessus-*.deb
+   ```
+4. Démarrez le service Nessus:
+   ```
+   sudo systemctl start nessusd
+   ```
+5. Accédez à l'interface web: https://localhost:8834
+6. Suivez les instructions pour créer un compte et activer votre licence
 
-echo "Scan terminé. Rapport disponible dans $FICHIER_SORTIE"
+## Configuration pour OWASP Top 10
+Une fois Nessus installé, créez un scan avec les paramètres suivants:
+1. Nouvelle analyse > Web Application Tests
+2. Configurer les options de base:
+   - Nom: "Scan OWASP Application Web"
+   - Description: "Détection des vulnérabilités OWASP Top 10"
+   - Targets: URL de l'application cible
+
+3. Configurer les options avancées:
+   - Assessment > Scan Type: "Scan for all web vulnerabilities"
+   - Discovery > Maximum pages to crawl: Définir selon l'application
+   - Authentication: Configurer si besoin
 EOF
-chmod +x /home/vagrant/tools/zap/configs/owasp-top10-scan.sh
+
+# Script d'installation de Nessus
+cat > /home/vagrant/tools/nessus/install_nessus.sh << 'EOF'
+#!/bin/bash
+# Script pour installer Nessus Expert
+
+# Vérifier si le fichier d'installation existe
+NESSUS_DEB=$(ls -1 /home/vagrant/tools/nessus/Nessus-*.deb 2>/dev/null)
+
+if [ -z "$NESSUS_DEB" ]; then
+  echo "Aucun fichier d'installation Nessus trouvé."
+  echo "Veuillez télécharger le package Nessus depuis https://www.tenable.com/downloads/nessus"
+  echo "et le placer dans le répertoire /home/vagrant/tools/nessus/"
+  exit 1
+fi
+
+# Installation de Nessus
+echo "Installation de Nessus à partir de $NESSUS_DEB..."
+sudo dpkg -i "$NESSUS_DEB"
+
+# Démarrage du service
+echo "Démarrage du service Nessus..."
+sudo systemctl enable nessusd
+sudo systemctl start nessusd
+
+echo "Nessus est maintenant installé et démarré."
+echo "Accédez à l'interface web: https://localhost:8834"
+echo "Suivez les instructions pour créer un compte et activer votre licence."
+EOF
+chmod +x /home/vagrant/tools/nessus/install_nessus.sh
 
 # 4. Installation/Vérification de Ghidra
 echo "Installation de Ghidra..."
