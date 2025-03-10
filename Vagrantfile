@@ -13,7 +13,8 @@ FORWARDED_PORTS = {
   3000 => 3000,   # Juice Shop
   80 => 8888,     # DVWA
   8000 => 8000,   # MobSF
-  8834 => 8834    # Nessus
+  8834 => 8834,   # Nessus
+  4000 => 4000    # NodeGoat
 }
 
 # Détection d'architecture pour Apple Silicon
@@ -48,6 +49,7 @@ Vagrant.configure("2") do |config|
     vmware.vmx["displayName"] = VM_NAME
     vmware.vmx["memsize"] = VM_MEMORY
     vmware.vmx["numvcpus"] = VM_CPUS
+    vmware.vmx["ethernet0.pcislotnumber"] = "160"
   end
 
   config.vm.provider "parallels" do |prl|
@@ -131,6 +133,8 @@ Vagrant.configure("2") do |config|
     ▶ WebGoat:          http://localhost:8081/WebGoat
     ▶ Juice Shop:       http://localhost:3000
     ▶ DVWA:             http://localhost:8888 (admin/password)
+    ▶ NodeGoat:         http://localhost:4000 (admin/Admin_123)
+      Tutorial:         http://localhost:4000/tutorial
 
   L'interface graphique de Kali Linux a été activée.
   Utilisez 'vagrant ssh' uniquement si vous souhaitez accéder à la ligne de commande.
