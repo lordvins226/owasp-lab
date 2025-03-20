@@ -14,8 +14,8 @@ Ce dépôt contient les fichiers nécessaires pour créer un environnement Vagra
 
 1. Clonez ce dépôt sur votre machine :
    ```bash
-   git clone https://github.com/votre-organisation/owasp-top10-lab-environment.git
-   cd owasp-top10-lab-environment
+   git clone https://github.com/lordvins226/owasp-lab.git
+   cd owasp-lab
    ```
 
 2. Pour utiliser VMware (recommandé) :
