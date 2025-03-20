@@ -2,8 +2,21 @@
 
 echo "Installation des applications vulnérables pour les labs OWASP Top 10 sur Kali Linux..."
 
+# Définition des variables
+LAB_HOME="/home/vagrant"
+LABS_DIR="$LAB_HOME/labs"
+DATA_DIR="$LAB_HOME/data"
+
+# Création des répertoires nécessaires
+mkdir -p $LABS_DIR/apps
+mkdir -p $LABS_DIR/java-app
+mkdir -p $LABS_DIR/mobile
+mkdir -p $LABS_DIR/binaries
+mkdir -p $DATA_DIR/nodegoat-db
+mkdir -p $DATA_DIR/mobsf
+
 # Créer un répertoire pour les fichiers docker-compose
-cd /home/vagrant/labs/apps
+cd $LABS_DIR/apps
 
 # WebGoat
 echo "Configuration de WebGoat..."
@@ -48,26 +61,9 @@ services:
     restart: unless-stopped
 EOF
 
-# MobSF
-echo "Configuration de MobSF..."
-cat > docker-compose-mobsf.yml << 'EOF'
-version: '3'
-services:
-  mobsf:
-    image: opensecurity/mobile-security-framework-mobsf
-    container_name: mobsf
-    ports:
-      - "8000:8000"
-    volumes:
-      - /home/vagrant/data/mobsf:/home/mobsf/.MobSF
-    restart: unless-stopped
-EOF
-
-mkdir -p /home/vagrant/data/mobsf
-
 # NodeGoat
 echo "Configuration de NodeGoat..."
-mkdir -p /home/vagrant/labs/apps/nodegoat
+mkdir -p $LABS_DIR/apps/nodegoat
 cat > docker-compose-nodegoat.yml << 'EOF'
 version: '3'
 services:
@@ -92,14 +88,40 @@ services:
     restart: unless-stopped
 EOF
 
-mkdir -p /home/vagrant/data/nodegoat-db
+# 6. Téléchargement d'échantillons pour les tests
+echo "Téléchargement d'échantillons pour les tests..."
+
+# Application Java vulnérable pour SonarQube
+cd $LABS_DIR/java-app
+if [ ! -d "benchmark" ]; then
+    git clone --depth 1 https://github.com/OWASP/benchmark.git
+fi
+
+# Fichiers APK pour MobSF
+cd $LABS_DIR/mobile
+if [ ! -f "UnCrackable-Level1.apk" ]; then
+    wget -q "https://github.com/OWASP/owasp-mstg/raw/master/Crackmes/Android/Level_01/UnCrackable-Level1.apk" -O UnCrackable-Level1.apk
+fi
+if [ ! -f "UnCrackable-Level2.apk" ]; then
+    wget -q "https://github.com/OWASP/owasp-mstg/raw/master/Crackmes/Android/Level_02/UnCrackable-Level2.apk" -O UnCrackable-Level2.apk
+fi
+
+# Binaires vulnérables pour Ghidra
+cd $LABS_DIR/binaries
+if [ ! -f "lab1A" ]; then
+    wget -q "https://github.com/RPISEC/MBE/raw/master/src/lab01/lab1A" -O lab1A
+    chmod +x lab1A
+fi
+if [ ! -f "lab2A" ]; then
+    wget -q "https://github.com/RPISEC/MBE/raw/master/src/lab02/lab2A" -O lab2A
+    chmod +x lab2A
+fi
 
 # Téléchargement parallèle des images Docker (optimisation)
 echo "Téléchargement des images Docker en parallèle..."
 docker pull webgoat/webgoat &
 docker pull bkimminich/juice-shop &
 docker pull vulnerables/web-dvwa &
-docker pull opensecurity/mobile-security-framework-mobsf &
 docker pull mongo:4.4
 wait
 
@@ -108,7 +130,6 @@ echo "Démarrage des applications vulnérables..."
 docker-compose -f docker-compose-webgoat.yml up -d
 docker-compose -f docker-compose-juiceshop.yml up -d
 docker-compose -f docker-compose-dvwa.yml up -d
-docker-compose -f docker-compose-mobsf.yml up -d
 docker-compose -f docker-compose-nodegoat.yml up -d
 
 # Initialisation de la base de données NodeGoat
@@ -117,7 +138,8 @@ sleep 10  # Attendre que la base démarre complètement
 docker exec nodegoat npm run db:seed
 
 # Correction des permissions
-chown -R vagrant:vagrant /home/vagrant/data
-chown -R vagrant:vagrant /home/vagrant/labs/apps
+chown -R vagrant:vagrant $LABS_DIR
+chown -R vagrant:vagrant $DATA_DIR
 
 echo "Applications vulnérables installées et démarrées sur Kali Linux."
+echo "Échantillons de tests téléchargés avec succès."

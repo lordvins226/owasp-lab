@@ -152,7 +152,6 @@ start_all_services() {
   docker-compose -f docker-compose-dvwa.yml up -d
   docker-compose -f docker-compose-mobsf.yml up -d
   docker-compose -f docker-compose-nodegoat.yml up -d
-  docker-compose -f docker-compose-elk.yml up -d
   cd /home/vagrant/tools
   docker-compose -f docker-compose-sonarqube.yml up -d
   echo "Tous les services démarrés."
