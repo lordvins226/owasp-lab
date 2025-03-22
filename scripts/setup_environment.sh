@@ -7,104 +7,8 @@ if [ ! -d "/home/vagrant/docs/guides" ]; then
   mkdir -p /home/vagrant/docs/guides
 fi
 
-# Ajout des guides pratiques si non synchronisés
-if [ ! -f "/home/vagrant/docs/guides/SonarQube_Guide.md" ]; then
-  echo "Création des guides pratiques pour les outils..."
-
-  # Création des guides individuels pour chaque outil
-  # (Les mêmes que dans la version précédente)
-  # ...
-fi
-
-# Création d'un guide pour NodeGoat
-cat > /home/vagrant/docs/guides/NodeGoat_Guide.md << 'EOF'
-# Guide Pratique : NodeGoat
-
-## Introduction
-NodeGoat est une application Node.js volontairement vulnérable, conçue pour illustrer les vulnérabilités de l'OWASP Top 10 dans un contexte Node.js. Elle inclut également un tutoriel explicatif pour comprendre et corriger ces vulnérabilités.
-
-## Accès à l'application
-- **URL principale**: http://localhost:4000
-- **Tutoriel intégré**: http://localhost:4000/tutorial
-
-## Comptes utilisateurs par défaut
-- **Administrateur**: admin / Admin_123
-- **Utilisateurs**:
-  - user1 / User1_123
-  - user2 / User2_123
-- Vous pouvez également créer de nouveaux comptes via la page d'inscription.
-
-## Vulnérabilités OWASP Top 10 démontrées
-NodeGoat illustre toutes les vulnérabilités de l'OWASP Top 10 à travers son code source et son interface. Le tutoriel intégré explique chaque vulnérabilité et les méthodes pour les corriger.
-
-### A01 - Broken Access Control
-Explorez les failles de contrôle d'accès entre utilisateurs et administrateurs.
-
-### A02 - Cryptographic Failures
-Analysez comment les mots de passe et informations sensibles sont stockés et transmis.
-
-### A03 - Injection
-Testez les vulnérabilités d'injection NoSQL dans la base de données MongoDB.
-
-### A04 - Insecure Design
-Identifiez les problèmes de conception dans l'architecture de l'application.
-
-### A05 - Security Misconfiguration
-Observez les configurations par défaut non sécurisées.
-
-### A06 - Vulnerable and Outdated Components
-Examinez les dépendances utilisées dans l'application.
-
-### A07 - Identification and Authentication Failures
-Testez les mécanismes d'authentification et leurs faiblesses.
-
-### A08 - Software and Data Integrity Failures
-Analysez la validation des données et les processus de modification.
-
-### A09 - Security Logging and Monitoring Failures
-Observez les lacunes dans la journalisation et la surveillance.
-
-### A10 - Server-Side Request Forgery
-Explorez les possibilités de SSRF dans l'application.
-
-## Exercices pratiques
-1. **Connexion et exploration**:
-   - Connectez-vous avec différents comptes (admin et utilisateur)
-   - Observez les différences de fonctionnalités et privilèges
-
-2. **Analyse du contrôle d'accès**:
-   - Tentez d'accéder à des fonctionnalités administratives en tant qu'utilisateur standard
-   - Manipulez les paramètres d'URL pour accéder à des ressources protégées
-
-3. **Test d'injection NoSQL**:
-   - Testez des techniques d'injection dans les formulaires de recherche
-   - Utilisez Burp Suite pour intercepter et modifier les requêtes
-
-4. **Identification des secrets codés en dur**:
-   - Utilisez SonarQube pour analyser le code source
-   - Identifiez les secrets et informations sensibles dans le code
-
-5. **Correction des vulnérabilités**:
-   - Suivez le tutoriel pour comprendre comment corriger chaque vulnérabilité
-   - Appliquez ces corrections dans une copie locale du code
-
-## Utilisation avec Burp Suite
-1. Configurez Burp Suite comme proxy pour intercepter le trafic
-2. Naviguez dans l'application et observez les requêtes
-3. Modifiez les paramètres pour tester les vulnérabilités
-
-## Utilisation avec SonarQube
-1. Clonez le dépôt NodeGoat localement
-2. Configurez un projet dans SonarQube
-3. Lancez une analyse pour identifier les vulnérabilités dans le code
-
-## Ressources complémentaires
-- [Dépôt GitHub NodeGoat](https://github.com/OWASP/NodeGoat)
-- [Documentation OWASP sur Node.js](https://owasp.org/www-project-nodejs-goat/)
-EOF
-
-# Configuration de l'environnement bash pour l'utilisateur vagrant
-cat >> /home/vagrant/.bashrc << 'EOF'
+# Configuration de l'environnement zsh pour l'utilisateur vagrant
+cat >> /home/vagrant/.zshrc << 'EOF'
 
 # Configuration pour les labs OWASP Top 10
 export LAB_HOME="/home/vagrant"
@@ -112,12 +16,12 @@ export TOOLS_DIR="$LAB_HOME/tools"
 export LABS_DIR="$LAB_HOME/labs"
 
 # Alias utiles pour les labs OWASP
-alias ll='ls -la'
 alias cls='clear'
 
 # Alias pour les outils principaux
-# Adaptés pour Kali Linux
 alias burpsuite-lab='burpsuite'
+alias burpsuite_launcher='$TOOLS_DIR/burpsuite/burpsuite_launcher.sh'
+alias ghidra_launcher='$TOOLS_DIR/ghidra/ghidra_launcher.sh'
 alias nessus-status='systemctl status nessusd'
 alias nessus-start='sudo systemctl start nessusd'
 alias nessus-stop='sudo systemctl stop nessusd'
@@ -133,7 +37,7 @@ alias show-guide='function _show_guide() { cat "/home/vagrant/docs/guides/$1" | 
 alias webgoat-logs='docker logs -f webgoat'
 alias juiceshop-logs='docker logs -f juice-shop'
 alias dvwa-logs='docker logs -f dvwa'
-alias mobsf-logs='docker logs -f mobsf'
+alias mobsf-logs='docker logs -f mobsf_app'
 alias nodegoat-logs='docker logs -f nodegoat'
 
 # Ouverture rapide de Nessus dans le navigateur
@@ -144,36 +48,88 @@ alias nodegoat-web='xdg-open http://localhost:4000'
 alias nodegoat-tutorial='xdg-open http://localhost:4000/tutorial'
 
 # Fonction pour démarrer tous les services
-start_all_services() {
+function start_all_services() {
   echo "Démarrage de tous les services..."
-  cd /home/vagrant/labs/apps
-  docker-compose -f docker-compose-webgoat.yml up -d
+
+  # Démarrer Juice Shop
+  cd $LABS_DIR/apps
   docker-compose -f docker-compose-juiceshop.yml up -d
-  docker-compose -f docker-compose-dvwa.yml up -d
-  docker-compose -f docker-compose-mobsf.yml up -d
+
+  # Démarrer NodeGoat
+  cd $LABS_DIR/apps
   docker-compose -f docker-compose-nodegoat.yml up -d
-  cd /home/vagrant/tools
+
+  # Démarrer WebGoat
+  docker run -d --name webgoat \
+    -p 8081:8080 -p 9090:9090 \
+    -e WEBGOAT_HOST=www.webgoat.local \
+    -e WEBWOLF_HOST=www.webwolf.local \
+    -e TZ=America/New_York \
+    webgoat/webgoat
+
+  # Démarrer DVWA
+  docker run -d --name dvwa \
+    -p 8888:80 \
+    kaakaww/dvwa-docker:latest
+
+  # Démarrer SonarQube
+  cd $TOOLS_DIR
   docker-compose -f docker-compose-sonarqube.yml up -d
+
+  # Démarrer MobSF
+  cd $TOOLS_DIR/mobsf
+  docker-compose up -d
+
   echo "Tous les services démarrés."
 }
 
 # Fonction pour arrêter tous les services
-stop_all_services() {
+function stop_all_services() {
   echo "Arrêt de tous les services..."
-  cd /home/vagrant/labs/apps
-  docker-compose -f docker-compose-webgoat.yml down
+
+  # Arrêter les conteneurs lancés avec docker run
+  docker stop webgoat && docker rm webgoat
+  docker stop dvwa && docker rm dvwa
+
+  # Arrêter les services lancés avec docker-compose
+  cd $LABS_DIR/apps
   docker-compose -f docker-compose-juiceshop.yml down
-  docker-compose -f docker-compose-dvwa.yml down
-  docker-compose -f docker-compose-mobsf.yml down
   docker-compose -f docker-compose-nodegoat.yml down
-  docker-compose -f docker-compose-elk.yml down
-  cd /home/vagrant/tools
+
+  cd $TOOLS_DIR
   docker-compose -f docker-compose-sonarqube.yml down
+
+  cd $TOOLS_DIR/mobsf
+  docker-compose down
+
   echo "Tous les services arrêtés."
 }
 
+# Fonction pour redémarrer WebGoat
+function restart_webgoat() {
+  echo "Redémarrage de WebGoat..."
+  docker stop webgoat && docker rm webgoat
+  docker run -d --name webgoat \
+    -p 8081:8080 -p 9090:9090 \
+    -e WEBGOAT_HOST=www.webgoat.local \
+    -e WEBWOLF_HOST=www.webwolf.local \
+    -e TZ=America/New_York \
+    webgoat/webgoat
+  echo "WebGoat redémarré."
+}
+
+# Fonction pour redémarrer DVWA
+function restart_dvwa() {
+  echo "Redémarrage de DVWA..."
+  docker stop dvwa && docker rm dvwa
+  docker run -d --name dvwa \
+    -p 8888:80 \
+    kaakaww/dvwa-docker:latest
+  echo "DVWA redémarré."
+}
+
 # Fonction pour afficher l'état de tous les services
-status_services() {
+function status_services() {
   echo "État des services Docker:"
   docker ps
 }
@@ -182,16 +138,19 @@ status_services() {
 alias start_services='start_all_services'
 alias stop_services='stop_all_services'
 alias status='status_services'
+alias restart_webgoat='restart_webgoat'
+alias restart_dvwa='restart_dvwa'
 
+EOF
+
+if [ -f ~/.zshrc ]; then
+    source /home/vagrant/.zshrc
+fi
 EOF
 
 # Créer un lien symbolique pour faciliter l'accès aux exercices
 ln -sf /home/vagrant/exercises /home/vagrant/Desktop/OWASP-Exercises
 
-# Correction des permissions
-chown -R vagrant:vagrant /home/vagrant/.bashrc
-
-# Création du fichier README pour les exercices
 cat > /home/vagrant/README.md << 'EOF'
 # Environnement de Lab OWASP Top 10 sur Kali Linux
 
@@ -204,8 +163,7 @@ Cet environnement Vagrant basé sur Kali Linux contient tous les outils et appli
 - **Usage**: Détection de vulnérabilités dans le code source
 
 ### 2. Burp Suite (Tests web)
-- **Lancement**: Menu Applications > Web Application Analysis > burpsuite
-- **Alternative**: Commande `burpsuite` ou `burpsuite-lab`
+- **Lancement**: Commande `burpsuite` ou `burpsuite_launcher`
 
 ### 3. Nessus Expert (Scans de vulnérabilités)
 - **Accès**: https://localhost:8834
@@ -213,84 +171,68 @@ Cet environnement Vagrant basé sur Kali Linux contient tous les outils et appli
 - **Note**: Nécessite une licence commerciale de Tenable
 
 ### 4. Ghidra (Analyse binaire)
-- **Lancement**: Commande `ghidra`
+- **Lancement**: Commande `ghidra` ou `ghidra_launcher`
 
 ### 5. MobSF (Sécurité mobile)
 - **Accès**: http://localhost:8000
 
 ## Applications vulnérables
 - WebGoat: http://localhost:8081/WebGoat
+- WebWolf: http://localhost:9090/WebWolf
 - OWASP Juice Shop: http://localhost:3000
 - DVWA: http://localhost:8888 (admin/password)
 - NodeGoat: http://localhost:4000 (admin/Admin_123 ou user1/User1_123)
   - Tutoriel NodeGoat: http://localhost:4000/tutorial
 
 ## Commandes utiles
+
+### Gestion des services
 - `start_services`: Démarrer tous les services Docker
 - `stop_services`: Arrêter tous les services Docker
 - `status`: Afficher l'état des services Docker
-- `guides`: Lister les guides disponibles
-- `show-guide [nom]`: Afficher un guide spécifique
-- `nodegoat-web`: Ouvrir NodeGoat dans le navigateur
+- `restart_webgoat`: Redémarrer uniquement le conteneur WebGoat
+- `restart_dvwa`: Redémarrer uniquement le conteneur DVWA
+
+### Lancement des outils
+- `burpsuite_launcher`: Lancer Burp Suite
+- `ghidra_launcher`: Lancer Ghidra avec Java configuré
+
+### Contrôle de Nessus
+- `nessus-start`: Démarrer le service Nessus
+- `nessus-stop`: Arrêter le service Nessus
+- `nessus-status`: Vérifier le statut du service Nessus
+- `nessus-web`: Ouvrir l'interface web de Nessus dans le navigateur
+
+### Vérification des services
+- `sonarqube-status`: Vérifier si SonarQube est en cours d'exécution
+- `mobsf-status`: Vérifier si MobSF est en cours d'exécution
+- `nodegoat-status`: Vérifier si NodeGoat est en cours d'exécution
+
+### Accès aux applications web
+- `nodegoat-web`: Ouvrir NodeGoat dans le navigateur (http://localhost:4000)
 - `nodegoat-tutorial`: Ouvrir le tutoriel NodeGoat dans le navigateur
+- `webgoat-web`: Ouvrir WebGoat dans le navigateur (http://localhost:8081/WebGoat)
+- `webwolf-web`: Ouvrir WebWolf dans le navigateur (http://localhost:9090/WebWolf)
+- `juiceshop-web`: Ouvrir OWASP Juice Shop dans le navigateur (http://localhost:3000)
+- `dvwa-web`: Ouvrir DVWA dans le navigateur (http://localhost:8888)
+- `sonarqube-web`: Ouvrir SonarQube dans le navigateur (http://localhost:9000)
+- `mobsf-web`: Ouvrir MobSF dans le navigateur (http://localhost:8000)
+
+### Consultation des logs
+- `webgoat-logs`: Afficher les logs de WebGoat en temps réel
+- `juiceshop-logs`: Afficher les logs de Juice Shop en temps réel
+- `dvwa-logs`: Afficher les logs de DVWA en temps réel
+- `mobsf-logs`: Afficher les logs de MobSF en temps réel
+- `nodegoat-logs`: Afficher les logs de NodeGoat en temps réel
+
+### Documentation
+- `guides`: Lister les guides disponibles
+- `show-guide [nom]`: Afficher un guide spécifique (ex: `show-guide BurpSuite_Guide.md`)
 
 ## Ressources
 - Guides détaillés: `/home/vagrant/docs/guides/`
 - Exercices: `/home/vagrant/exercises/`
 - Applications de test: `/home/vagrant/labs/`
-
-## Avantages de l'utilisation de Kali Linux
-- De nombreux outils de sécurité préinstallés
-- Environnement conçu pour les tests de pénétration
-- Interface graphique optimisée pour la sécurité
-EOF
-
-# Message de bienvenue
-cat << 'EOF'
-
-╔═══════════════════════════════════════════════════════════════════╗
-║                                                                   ║
-║   Bienvenue dans l'Environnement de Lab OWASP Top 10 !            ║
-║                                                                   ║
-╚═══════════════════════════════════════════════════════════════════╝
-
-OUTILS PRINCIPAUX DE SÉCURITÉ:
-  ▶ SonarQube (Analyse statique):   http://localhost:9000 (admin/admin)
-     Usage: Détection des vulnérabilités dans le code source
-
-  ▶ Burp Suite (Tests web):         burpsuite / burpsuite-lab
-     Usage: Interception et modification des requêtes HTTP/HTTPS
-
-  ▶ Nessus Expert:               https://localhost:8834
-     Usage: Scan complet de vulnérabilités
-     Gestion: nessus-start, nessus-stop, nessus-status, nessus-web
-
-  ▶ Ghidra (Analyse binaire):       ghidra
-     Usage: Rétro-ingénierie et analyse des implémentations cryptographiques
-
-  ▶ MobSF (Sécurité mobile):        http://localhost:8000
-     Usage: Analyse statique et dynamique d'applications mobiles
-
-APPLICATIONS VULNÉRABLES:
-  ▶ WebGoat:          http://localhost:8080
-  ▶ Juice Shop:       http://localhost:3000
-  ▶ DVWA:             http://localhost:80 (admin/password)
-  ▶ NodeGoat:         http://localhost:4000 (admin/Admin_123)
-    Tutorial:         http://localhost:4000/tutorial
-
-COMMANDES UTILES:
-  ▶ start_services   - Démarrer tous les services
-  ▶ stop_services    - Arrêter tous les services
-  ▶ status           - Afficher l'état des services
-  ▶ guides           - Lister les guides disponibles
-  ▶ show-guide [nom] - Afficher un guide spécifique
-  ▶ nodegoat-web     - Ouvrir NodeGoat dans le navigateur
-  ▶ nodegoat-tutorial - Ouvrir le tutoriel NodeGoat
-
-DOCUMENTATION:
-  ▶ Des guides détaillés pour chaque outil sont disponibles dans:
-    /home/vagrant/docs/guides/
-
 EOF
 
 echo "Configuration de l'environnement terminée."

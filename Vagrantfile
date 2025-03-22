@@ -119,52 +119,87 @@ Vagrant.configure("2") do |config|
   config.vm.post_up_message = <<-MESSAGE
   ╔═══════════════════════════════════════════════════════════════════╗
   ║                                                                   ║
-  ║   Environnement de Lab OWASP Top 10 sur Kali Linux                ║
+  ║   Bienvenue dans l'Environnement de Lab OWASP Top 10 !            ║
   ║                                                                   ║
   ╚═══════════════════════════════════════════════════════════════════╝
 
   OUTILS PRINCIPAUX DE SÉCURITÉ:
-    ▶ SonarQube:      http://localhost:9000 (admin/admin)
-       Analyse statique de code pour détecter les vulnérabilités
+    ▶ SonarQube (Analyse statique):   http://localhost:9000 (admin/admin)
+       Usage: Détection des vulnérabilités dans le code source
 
-    ▶ Burp Suite:     Il faut d'abord l'installer:
-       cd /home/vagrant/tools/burpsuite
-       chmod +x burpsuite_community_linux*.sh
-       ./burpsuite_community_linux*.sh
-       Ensuite utiliser la commande: burpsuite_launcher
+    ▶ Burp Suite (Tests web):         burpsuite / burpsuite_launcher
+       Usage: Interception et modification des requêtes HTTP/HTTPS
 
-    ▶ Nessus Expert:  https://localhost:8834
-       Scanner de vulnérabilités réseau et web
-       Nécessite une licence: ./tools/nessus/activate_nessus.sh VOTRE-LICENCE
+    ▶ Nessus Expert:                  https://localhost:8834
+       Usage: Scan complet de vulnérabilités
+       Gestion: nessus-start, nessus-stop, nessus-status, nessus-web
 
-    ▶ Ghidra:         Utiliser la commande: ghidra
-       Analyse de binaires et rétro-ingénierie
+    ▶ Ghidra (Analyse binaire):       ghidra / ghidra_launcher
+       Usage: Rétro-ingénierie
 
-    ▶ MobSF:          http://localhost:8000
-       Analyse de sécurité des applications mobiles
+    ▶ MobSF (Sécurité mobile):        http://localhost:8000
+       Usage: Analyse statique et dynamique d'applications mobiles
 
   APPLICATIONS VULNÉRABLES:
-    ▶ WebGoat:        http://localhost:8081/WebGoat
-       WebWolf:       http://localhost:9090/WebWolf
-
-    ▶ Juice Shop:     http://localhost:3000
-
-    ▶ DVWA:           http://localhost:8888
-       Identifiants:  admin/password
-
-    ▶ NodeGoat:       http://localhost:4000
-       Tutorial:      http://localhost:4000/tutorial
-       Identifiants:  admin/Admin_123 ou user1/User1_123
+    ▶ WebGoat:          http://localhost:8081/WebGoat
+    ▶ WebWolf:          http://localhost:9090/WebWolf
+    ▶ Juice Shop:       http://localhost:3000
+    ▶ DVWA:             http://localhost:8888 (admin/password)
+    ▶ NodeGoat:         http://localhost:4000 (admin/Admin_123)
+      Tutorial:         http://localhost:4000/tutorial
 
   COMMANDES UTILES:
-    ▶ start_services   - Démarrer tous les services
-    ▶ stop_services    - Arrêter tous les services
-    ▶ status           - Afficher l'état des services
-    ▶ restart_webgoat  - Redémarrer uniquement le conteneur WebGoat
-    ▶ restart_dvwa     - Redémarrer uniquement le conteneur DVWA
-    ▶ guides           - Lister les guides disponibles
-    ▶ burpsuite_launcher - Lancer Burp Suite avec le script personnalisé
-    ▶ ghidra_launcher  - Lancer Ghidra avec Java configuré
+
+    GESTION DES SERVICES:
+    ▶ start_services     - Démarrer tous les services
+    ▶ stop_services      - Arrêter tous les services
+    ▶ status             - Afficher l'état des services Docker
+    ▶ restart_webgoat    - Redémarrer WebGoat
+    ▶ restart_dvwa       - Redémarrer DVWA
+
+    LANCEMENT DES OUTILS:
+    ▶ burpsuite-lab      - Lancer Burp Suite
+    ▶ burpsuite_launcher - Lancer Burp Suite avec script personnalisé
+    ▶ ghidra_launcher    - Lancer Ghidra avec Java configuré
+
+    CONTRÔLE DE NESSUS:
+    ▶ nessus-start       - Démarrer le service Nessus
+    ▶ nessus-stop        - Arrêter le service Nessus
+    ▶ nessus-status      - Vérifier le statut du service Nessus
+    ▶ nessus-web         - Ouvrir l'interface web de Nessus
+
+    VÉRIFICATION DES SERVICES:
+    ▶ sonarqube-status   - Vérifier si SonarQube est actif
+    ▶ mobsf-status       - Vérifier si MobSF est actif
+    ▶ nodegoat-status    - Vérifier si NodeGoat est actif
+
+    ACCÈS AUX APPLICATIONS WEB:
+    ▶ webgoat-web        - Ouvrir WebGoat dans le navigateur
+    ▶ webwolf-web        - Ouvrir WebWolf dans le navigateur
+    ▶ juiceshop-web      - Ouvrir Juice Shop dans le navigateur
+    ▶ dvwa-web           - Ouvrir DVWA dans le navigateur
+    ▶ nodegoat-web       - Ouvrir NodeGoat dans le navigateur
+    ▶ nodegoat-tutorial  - Ouvrir le tutoriel NodeGoat
+    ▶ sonarqube-web      - Ouvrir SonarQube dans le navigateur
+    ▶ mobsf-web          - Ouvrir MobSF dans le navigateur
+
+    CONSULTATION DES LOGS:
+    ▶ webgoat-logs       - Afficher les logs de WebGoat en temps réel
+    ▶ juiceshop-logs     - Afficher les logs de Juice Shop en temps réel
+    ▶ dvwa-logs          - Afficher les logs de DVWA en temps réel
+    ▶ mobsf-logs         - Afficher les logs de MobSF en temps réel
+    ▶ nodegoat-logs      - Afficher les logs de NodeGoat en temps réel
+
+    DOCUMENTATION:
+    ▶ guides             - Lister les guides disponibles
+    ▶ show-guide [nom]   - Afficher un guide spécifique
+                           Exemple: show-guide BurpSuite_Guide.md
+
+  DOCUMENTATION:
+    ▶ Des guides détaillés pour chaque outil sont disponibles dans:
+      /home/vagrant/docs/guides/
+      Guides disponibles: BurpSuite_Guide.md, Ghidra_Guide.md, MobSF_Guide.md,
+                          Nessus_Guide.md, SonarQube_Guide.md
 
   L'interface graphique de Kali Linux a été activée.
   Utilisez 'vagrant ssh' pour accéder à la ligne de commande.
