@@ -140,13 +140,11 @@ alias stop_services='stop_all_services'
 alias status='status_services'
 alias restart_webgoat='restart_webgoat'
 alias restart_dvwa='restart_dvwa'
-
 EOF
 
-if [ -f ~/.zshrc ]; then
+if [ -f /home/vagrant/.zshrc ]; then
     source /home/vagrant/.zshrc
 fi
-EOF
 
 # Créer un lien symbolique pour faciliter l'accès aux exercices
 ln -sf /home/vagrant/exercises /home/vagrant/Desktop/OWASP-Exercises

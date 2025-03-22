@@ -4,6 +4,7 @@
 VM_NAME = "owasp-lab-environment"
 VM_IP = "192.168.33.11"
 VM_MEMORY = 4096
+# VM_MEMORY = 8192
 VM_CPUS = 4
 
 FORWARDED_PORTS = {
