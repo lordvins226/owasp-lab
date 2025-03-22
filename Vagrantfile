@@ -11,13 +11,13 @@ FORWARDED_PORTS = {
   8080 => 8080,   # Burp Suite
   8081 => 8081,   # WebGoat
   3000 => 3000,   # Juice Shop
-  80 => 8888,     # DVWA
+  8888 => 8888,   # DVWA
   8000 => 8000,   # MobSF
   8834 => 8834,   # Nessus
-  4000 => 4000    # NodeGoat
+  4000 => 4000,   # NodeGoat
+  9090 => 9090    # WebWolf (part of WebGoat)
 }
 
-# Détection d'architecture pour Apple Silicon
 def arm64?
   arch = `uname -m`.strip
   return true if arch == "arm64"
@@ -69,7 +69,8 @@ Vagrant.configure("2") do |config|
     vb.customize ["modifyvm", :id, "--ioapic", "on"]
   end
 
-  config.vm.network "private_network", ip: VM_IP
+  config.vm.network "public_network", use_dhcp_assigned_default_route: true
+#   config.vm.network "private_network", ip: VM_IP
   config.vm.hostname = "owasp-lab"
 
   FORWARDED_PORTS.each do |guest, host|
@@ -123,20 +124,49 @@ Vagrant.configure("2") do |config|
   ╚═══════════════════════════════════════════════════════════════════╝
 
   OUTILS PRINCIPAUX DE SÉCURITÉ:
-    ▶ SonarQube (Analyse statique):   http://localhost:9000 (admin/admin)
-    ▶ Burp Suite (Tests web):         burp
-    ▶ Nessus Expert:                  https://localhost:8834
-    ▶ Ghidra (Analyse binaire):       ghidra
-    ▶ MobSF (Sécurité mobile):        http://localhost:8000
+    ▶ SonarQube:      http://localhost:9000 (admin/admin)
+       Analyse statique de code pour détecter les vulnérabilités
+
+    ▶ Burp Suite:     Il faut d'abord l'installer:
+       cd /home/vagrant/tools/burpsuite
+       chmod +x burpsuite_community_linux*.sh
+       ./burpsuite_community_linux*.sh
+       Ensuite utiliser la commande: burpsuite_launcher
+
+    ▶ Nessus Expert:  https://localhost:8834
+       Scanner de vulnérabilités réseau et web
+       Nécessite une licence: ./tools/nessus/activate_nessus.sh VOTRE-LICENCE
+
+    ▶ Ghidra:         Utiliser la commande: ghidra
+       Analyse de binaires et rétro-ingénierie
+
+    ▶ MobSF:          http://localhost:8000
+       Analyse de sécurité des applications mobiles
 
   APPLICATIONS VULNÉRABLES:
-    ▶ WebGoat:          http://localhost:8081/WebGoat
-    ▶ Juice Shop:       http://localhost:3000
-    ▶ DVWA:             http://localhost:8888 (admin/password)
-    ▶ NodeGoat:         http://localhost:4000 (admin/Admin_123)
-      Tutorial:         http://localhost:4000/tutorial
+    ▶ WebGoat:        http://localhost:8081/WebGoat
+       WebWolf:       http://localhost:9090/WebWolf
+
+    ▶ Juice Shop:     http://localhost:3000
+
+    ▶ DVWA:           http://localhost:8888
+       Identifiants:  admin/password
+
+    ▶ NodeGoat:       http://localhost:4000
+       Tutorial:      http://localhost:4000/tutorial
+       Identifiants:  admin/Admin_123 ou user1/User1_123
+
+  COMMANDES UTILES:
+    ▶ start_services   - Démarrer tous les services
+    ▶ stop_services    - Arrêter tous les services
+    ▶ status           - Afficher l'état des services
+    ▶ restart_webgoat  - Redémarrer uniquement le conteneur WebGoat
+    ▶ restart_dvwa     - Redémarrer uniquement le conteneur DVWA
+    ▶ guides           - Lister les guides disponibles
+    ▶ burpsuite_launcher - Lancer Burp Suite avec le script personnalisé
+    ▶ ghidra_launcher  - Lancer Ghidra avec Java configuré
 
   L'interface graphique de Kali Linux a été activée.
-  Utilisez 'vagrant ssh' uniquement si vous souhaitez accéder à la ligne de commande.
+  Utilisez 'vagrant ssh' pour accéder à la ligne de commande.
   MESSAGE
-end
+  end

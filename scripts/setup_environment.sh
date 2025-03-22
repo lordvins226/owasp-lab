@@ -185,33 +185,11 @@ alias status='status_services'
 
 EOF
 
-# Création d'un raccourci sur le bureau pour lancer les outils (pour l'environnement graphique de Kali)
-DESKTOP_DIR="/home/vagrant/Desktop"
-if [ ! -d "$DESKTOP_DIR" ]; then
-  mkdir -p "$DESKTOP_DIR"
-fi
-
-# Création des raccourcis sur le bureau
-cat > "$DESKTOP_DIR/OWASP-Lab-Tools.desktop" << 'EOF'
-[Desktop Entry]
-Name=OWASP Lab Tools
-Comment=Raccourcis pour les outils du lab OWASP
-Exec=sh -c "xterm -e 'echo \"Bienvenue dans le Lab OWASP Top 10\" && echo \"\" && echo \"Les outils disponibles sont:\" && echo \" - SonarQube: http://localhost:9000\" && echo \" - Burp Suite: burpsuite\" && echo \" - Nessus Expert: https://localhost:8834\" && echo \" - Ghidra: ghidra\" && echo \" - MobSF: http://localhost:8000\" && echo \" - NodeGoat: http://localhost:4000\" && echo \"\" && echo \"Appuyez sur Enter pour fermer cette fenêtre.\" && read'"
-Icon=kali-bugs-reporting
-Terminal=false
-Type=Application
-Categories=Application;
-EOF
-
-# Rendre les fichiers exécutables
-chmod +x "$DESKTOP_DIR/OWASP-Lab-Tools.desktop"
-
 # Créer un lien symbolique pour faciliter l'accès aux exercices
 ln -sf /home/vagrant/exercises /home/vagrant/Desktop/OWASP-Exercises
 
 # Correction des permissions
 chown -R vagrant:vagrant /home/vagrant/.bashrc
-chown -R vagrant:vagrant "$DESKTOP_DIR"
 
 # Création du fichier README pour les exercices
 cat > /home/vagrant/README.md << 'EOF'
@@ -294,9 +272,9 @@ OUTILS PRINCIPAUX DE SÉCURITÉ:
      Usage: Analyse statique et dynamique d'applications mobiles
 
 APPLICATIONS VULNÉRABLES:
-  ▶ WebGoat:          http://localhost:8081/WebGoat
+  ▶ WebGoat:          http://localhost:8080
   ▶ Juice Shop:       http://localhost:3000
-  ▶ DVWA:             http://localhost:8888 (admin/password)
+  ▶ DVWA:             http://localhost:80 (admin/password)
   ▶ NodeGoat:         http://localhost:4000 (admin/Admin_123)
     Tutorial:         http://localhost:4000/tutorial
 

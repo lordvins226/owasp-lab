@@ -15,29 +15,16 @@ mkdir -p $LABS_DIR/binaries
 mkdir -p $DATA_DIR/nodegoat-db
 mkdir -p $DATA_DIR/mobsf
 
-# Créer un répertoire pour les fichiers docker-compose
-cd $LABS_DIR/apps
+# Configurer les permissions pour MongoDB
+chmod -R 777 $DATA_DIR/nodegoat-db
 
-# WebGoat
-echo "Configuration de WebGoat..."
-cat > docker-compose-webgoat.yml << 'EOF'
-version: '3'
-services:
-  webgoat:
-    image: webgoat/webgoat
-    container_name: webgoat
-    environment:
-      - WEBWOLF_HOST=webwolf
-      - WEBWOLF_PORT=9090
-    ports:
-      - "8081:8080"
-      - "9090:9090"
-    restart: unless-stopped
-EOF
+# Créer un répertoire pour les fichiers docker-compose
+mkdir -p $LABS_DIR/apps
+cd $LABS_DIR/apps
 
 # OWASP Juice Shop
 echo "Configuration de OWASP Juice Shop..."
-cat > docker-compose-juiceshop.yml << 'EOF'
+cat > $LABS_DIR/apps/docker-compose-juiceshop.yml << 'EOF'
 version: '3'
 services:
   juice-shop:
@@ -48,23 +35,9 @@ services:
     restart: unless-stopped
 EOF
 
-# DVWA
-echo "Configuration de DVWA..."
-cat > docker-compose-dvwa.yml << 'EOF'
-version: '3'
-services:
-  dvwa:
-    image: vulnerables/web-dvwa
-    container_name: dvwa
-    ports:
-      - "80:80"
-    restart: unless-stopped
-EOF
-
 # NodeGoat
 echo "Configuration de NodeGoat..."
-mkdir -p $LABS_DIR/apps/nodegoat
-cat > docker-compose-nodegoat.yml << 'EOF'
+cat > $LABS_DIR/apps/docker-compose-nodegoat.yml << 'EOF'
 version: '3'
 services:
   web:
@@ -88,7 +61,7 @@ services:
     restart: unless-stopped
 EOF
 
-# 6. Téléchargement d'échantillons pour les tests
+# Téléchargement d'échantillons pour les tests
 echo "Téléchargement d'échantillons pour les tests..."
 
 # Application Java vulnérable pour SonarQube
@@ -117,25 +90,32 @@ if [ ! -f "lab2A" ]; then
     chmod +x lab2A
 fi
 
-# Téléchargement parallèle des images Docker (optimisation)
-echo "Téléchargement des images Docker en parallèle..."
-docker pull webgoat/webgoat &
-docker pull bkimminich/juice-shop &
-docker pull vulnerables/web-dvwa &
-docker pull mongo:4.4
-wait
 
-# Démarrage des applications
-echo "Démarrage des applications vulnérables..."
-docker-compose -f docker-compose-webgoat.yml up -d
+# Démarrage des applications avec Docker Compose
+echo "Démarrage de Juice Shop et NodeGoat avec Docker Compose..."
+cd $LABS_DIR/apps
 docker-compose -f docker-compose-juiceshop.yml up -d
-docker-compose -f docker-compose-dvwa.yml up -d
 docker-compose -f docker-compose-nodegoat.yml up -d
+
+# Démarrage de WebGoat
+echo "Démarrage de WebGoat..."
+docker run -d --name webgoat \
+  -p 8081:8080 -p 9090:9090 \
+  -e WEBGOAT_HOST=www.webgoat.local \
+  -e WEBWOLF_HOST=www.webwolf.local \
+  -e TZ=America/New_York \
+  webgoat/webgoat
+
+# Démarrage de DVWA
+echo "Démarrage de DVWA..."
+docker run -d --name dvwa \
+  -p 8888:80 \
+  kaakaww/dvwa-docker:latest
 
 # Initialisation de la base de données NodeGoat
 echo "Initialisation de la base de données NodeGoat..."
 sleep 10  # Attendre que la base démarre complètement
-docker exec nodegoat npm run db:seed
+docker exec nodegoat npm run db:seed 2>/dev/null || echo "NodeGoat seed failed - will retry on next startup"
 
 # Correction des permissions
 chown -R vagrant:vagrant $LABS_DIR
@@ -143,3 +123,10 @@ chown -R vagrant:vagrant $DATA_DIR
 
 echo "Applications vulnérables installées et démarrées sur Kali Linux."
 echo "Échantillons de tests téléchargés avec succès."
+echo ""
+echo "Applications disponibles:"
+echo "- WebGoat:      http://localhost:8081/WebGoat"
+echo "- WebWolf:      http://localhost:9090/WebWolf"
+echo "- DVWA:         http://localhost:8888 (admin/password)"
+echo "- Juice Shop:   http://localhost:3000"
+echo "- NodeGoat:     http://localhost:4000 (admin/Admin_123)"

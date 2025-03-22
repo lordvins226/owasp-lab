@@ -54,4 +54,7 @@ bash /vagrant/scripts/install_tools.sh
 echo "Étape 3: Configuration de l'environnement"
 bash /vagrant/scripts/setup_environment.sh
 
+sed -i 's/XKBLAYOUT=".*"/XKBLAYOUT="us"/' /etc/default/keyboard
+udevadm trigger --subsystem-match=input --action=change
+
 echo "Provisionnement de l'environnement Kali Linux terminé!"
