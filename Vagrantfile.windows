@@ -1,0 +1,113 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+APPDETECTIVE_VM_NAME = "appdetectivepro-windows"
+APPDETECTIVE_VM_MEMORY = 8192
+APPDETECTIVE_VM_CPUS = 4
+
+# Ports à rediriger (AppDetectivePRO + PostgreSQL vulnérable)
+APPDETECTIVE_PORTS = {
+  5432 => 5432,  # PostgreSQL vulnérable
+  3389 => 3389   # RDP pour accès à Windows
+}
+
+Vagrant.configure("2") do |config|
+  config.vm.boot_timeout = 1800  # Windows peut prendre du temps à démarrer
+  config.vm.graceful_halt_timeout = 600
+
+  config.vm.box = "stromweld/windows-11"
+  config.vm.box_version = "202503.09.0"
+
+  config.vm.hostname = "appdetectivepro"
+
+  # Configuration du réseau
+  config.vm.network "public_network", use_dhcp_assigned_default_route: true
+
+  # Redirection des ports
+  APPDETECTIVE_PORTS.each do |guest, host|
+    config.vm.network "forwarded_port", guest: guest, host: host
+  end
+
+  # Configuration spécifique à VirtualBox
+  config.vm.provider "virtualbox" do |vb|
+    vb.gui = true
+    vb.memory = APPDETECTIVE_VM_MEMORY
+    vb.cpus = APPDETECTIVE_VM_CPUS
+    vb.name = APPDETECTIVE_VM_NAME
+    vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    vb.customize ["modifyvm", :id, "--vram", "128"]  # Mémoire vidéo pour Windows
+    vb.customize ["modifyvm", :id, "--accelerate3d", "on"]
+    vb.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
+    vb.customize ["modifyvm", :id, "--draganddrop", "bidirectional"]
+  end
+
+  # Configuration spécifique à VMware
+  config.vm.provider "vmware_desktop" do |vmware|
+    vmware.gui = true
+    vmware.memory = APPDETECTIVE_VM_MEMORY
+    vmware.cpus = APPDETECTIVE_VM_CPUS
+    vmware.vmx["displayName"] = APPDETECTIVE_VM_NAME
+    vmware.vmx["memsize"] = APPDETECTIVE_VM_MEMORY
+    vmware.vmx["numvcpus"] = APPDETECTIVE_VM_CPUS
+    vmware.vmx["ethernet0.pcislotnumber"] = "160"
+  end
+
+  # Configuration spécifique à Parallels
+  config.vm.provider "parallels" do |prl|
+    prl.memory = APPDETECTIVE_VM_MEMORY
+    prl.cpus = APPDETECTIVE_VM_CPUS
+    prl.name = APPDETECTIVE_VM_NAME
+    prl.customize ["set", :id, "--startup-view", "window"]
+    prl.update_guest_tools = true
+  end
+
+  # Dossier partagé pour installer AppDetectivePRO
+  config.vm.synced_folder "./appdetective_installer", "/appdetective_installer", create: true
+
+  # Scripts séparés pour l'installation et la configuration
+  config.vm.provision "shell", path: "scripts/install_prerequisites.ps1", privileged: true
+  config.vm.provision "shell", path: "scripts/setup_vulnerable_postgres.ps1", privileged: true
+
+  # Message post-installation
+  config.vm.post_up_message = <<-MESSAGE
+  ╔═══════════════════════════════════════════════════════════════════╗
+  ║                                                                   ║
+  ║   Environnement AppDetectivePRO pour OWASP Top 10                 ║
+  ║                                                                   ║
+  ╚═══════════════════════════════════════════════════════════════════╝
+
+  INSTALLATION D'APPDETECTIVEPRO:
+    1. Téléchargez le fichier d'installation d'AppDetectivePRO
+    2. Placez-le dans le dossier 'appdetective_installer' sur votre machine hôte
+    3. Ce dossier est accessible depuis le bureau Windows via le raccourci
+    4. Installez AppDetectivePRO en suivant les instructions du fournisseur
+
+  BASE DE DONNÉES VULNÉRABLE POSTGRESQL:
+    ▶ Serveur:         localhost
+    ▶ Port:            5432
+    ▶ Super Utilisateur: postgres / postgres123
+    ▶ Base de données: customer_db (contient des données sensibles)
+
+  UTILISATEURS VULNÉRABLES:
+    ▶ admin / admin123 (superuser)
+    ▶ dev / dev123 (createdb)
+    ▶ app / app123 (createdb)
+    ▶ readonly / readonly (lecture seule)
+    ▶ no_password (superuser sans mot de passe)
+    ▶ postgres_backup / backup123 (superuser)
+
+  VULNÉRABILITÉS INTÉGRÉES:
+    ▶ A01 - Broken Access Control: privilèges excessifs
+    ▶ A02 - Cryptographic Failures: mots de passe stockés en clair
+    ▶ A05 - Security Misconfiguration: configuration PostgreSQL non sécurisée
+    ▶ A07 - Authentication Failures: mots de passe faibles et comptes par défaut
+    ▶ A09 - Logging Failures: journalisation insuffisante
+
+  CONNEXION À LA MACHINE:
+    ▶ RDP:              localhost:3389
+    ▶ Identifiants:     vagrant / vagrant
+
+  Cette machine est conçue pour fonctionner en tandem avec votre
+  environnement Kali Linux OWASP Top 10 existant.
+  MESSAGE
+end
