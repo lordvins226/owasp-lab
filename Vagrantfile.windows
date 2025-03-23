@@ -5,7 +5,7 @@ APPDETECTIVE_VM_NAME = "appdetectivepro-windows"
 APPDETECTIVE_VM_MEMORY = 8192
 APPDETECTIVE_VM_CPUS = 4
 
-# Ports à rediriger (AppDetectivePRO + PostgreSQL vulnérable)
+# Ports à rediriger
 APPDETECTIVE_PORTS = {
   5432 => 5432,  # PostgreSQL vulnérable
   3389 => 3389   # RDP pour accès à Windows

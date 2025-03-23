@@ -60,8 +60,8 @@ function start_all_services() {
   docker-compose -f docker-compose-juiceshop.yml up -d
 
   # Démarrer NodeGoat
-  cd $LABS_DIR/apps
-  docker-compose -f docker-compose-nodegoat.yml up -d
+  cd $LABS_DIR/apps/NodeGoat
+  docker-compose up -d
 
   # Démarrer WebGoat
   docker run -d --name webgoat \
@@ -98,7 +98,9 @@ function stop_all_services() {
   # Arrêter les services lancés avec docker-compose
   cd $LABS_DIR/apps
   docker-compose -f docker-compose-juiceshop.yml down
-  docker-compose -f docker-compose-nodegoat.yml down
+
+  cd $LABS_DIR/apps/NodeGoat
+  docker-compose down
 
   cd $TOOLS_DIR
   docker-compose -f docker-compose-sonarqube.yml down
@@ -146,10 +148,6 @@ alias restart_webgoat='restart_webgoat'
 alias restart_dvwa='restart_dvwa'
 EOF
 
-if [ -f /home/vagrant/.zshrc ]; then
-    source /home/vagrant/.zshrc
-fi
-
 # Créer un lien symbolique pour faciliter l'accès aux exercices
 ln -sf /home/vagrant/exercises /home/vagrant/Desktop/OWASP-Exercises
 
@@ -165,7 +163,7 @@ Cet environnement Vagrant basé sur Kali Linux contient tous les outils et appli
 - **Usage**: Détection de vulnérabilités dans le code source
 
 ### 2. Burp Suite (Tests web)
-- **Lancement**: Commande `burpsuite` ou `burpsuite_launcher`
+- **Lancement**: Recherchez "Burp Suite" dans le menu des applications
 
 ### 3. Nessus Expert (Scans de vulnérabilités)
 - **Accès**: https://localhost:8834
@@ -173,7 +171,7 @@ Cet environnement Vagrant basé sur Kali Linux contient tous les outils et appli
 - **Note**: Nécessite une licence commerciale de Tenable
 
 ### 4. Ghidra (Analyse binaire)
-- **Lancement**: Commande `ghidra` ou `ghidra_launcher`
+- **Lancement**: Commande `ghidra`
 
 ### 5. MobSF (Sécurité mobile)
 - **Accès**: http://localhost:8000
@@ -196,8 +194,8 @@ Cet environnement Vagrant basé sur Kali Linux contient tous les outils et appli
 - `restart_dvwa`: Redémarrer uniquement le conteneur DVWA
 
 ### Lancement des outils
-- `burpsuite_launcher`: Lancer Burp Suite
-- `ghidra_launcher`: Lancer Ghidra avec Java configuré
+- `burpsuite_launcher`: Lancer l'installation de Burp Suite
+- `ghidra`: Lancer Ghidra
 
 ### Contrôle de Nessus
 - `nessus-start`: Démarrer le service Nessus
