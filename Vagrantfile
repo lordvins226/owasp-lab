@@ -3,8 +3,8 @@
 
 VM_NAME = "owasp-lab-environment"
 VM_IP = "192.168.33.11"
-VM_MEMORY = 4096
-# VM_MEMORY = 8192
+# VM_MEMORY = 4096
+VM_MEMORY = 8192
 VM_CPUS = 4
 
 FORWARDED_PORTS = {
@@ -124,14 +124,14 @@ Vagrant.configure("2") do |config|
     ▶ SonarQube (Analyse statique):   http://localhost:9000 (admin/admin)
        Usage: Détection des vulnérabilités dans le code source
 
-    ▶ Burp Suite (Tests web):         burpsuite / burpsuite_launcher
+    ▶ Burp Suite (Tests web):         burpsuite
        Usage: Interception et modification des requêtes HTTP/HTTPS
 
     ▶ Nessus Expert:                  https://localhost:8834
        Usage: Scan complet de vulnérabilités
        Gestion: nessus-start, nessus-stop, nessus-status, nessus-web
 
-    ▶ Ghidra (Analyse binaire):       ghidra / ghidra_launcher
+    ▶ Ghidra (Analyse binaire):       ghidra
        Usage: Rétro-ingénierie
 
     ▶ MobSF (Sécurité mobile):        http://localhost:8000
@@ -155,9 +155,8 @@ Vagrant.configure("2") do |config|
     ▶ restart_dvwa       - Redémarrer DVWA
 
     LANCEMENT DES OUTILS:
-    ▶ burpsuite-lab      - Lancer Burp Suite
-    ▶ burpsuite_launcher - Lancer Burp Suite avec script personnalisé
-    ▶ ghidra_launcher    - Lancer Ghidra avec Java configuré
+    ▶ burpsuite_launcher - Lancer l'installation de Burp Suite
+    ▶ ghidra    - Lancer Ghidra
 
     CONTRÔLE DE NESSUS:
     ▶ nessus-start       - Démarrer le service Nessus

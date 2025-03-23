@@ -1,10 +1,12 @@
 # Environnement de Lab pour OWASP Top 10
 
-Ce dépôt contient les fichiers nécessaires pour créer un environnement Vagrant basé sur Kali Linux permettant de réaliser les exercices pratiques sur l'OWASP Top 10.
+Ce dépôt contient les fichiers nécessaires pour créer un environnement Vagrant basé sur Kali Linux permettant de
+réaliser les exercices pratiques sur l'OWASP Top 10.
 
 ## Prérequis
 
-- [VMware Workstation Pro/Player](https://www.vmware.com/products/workstation-pro.html) ou [VirtualBox](https://www.virtualbox.org/wiki/Downloads) (un seul à la fois)
+- [VMware Workstation Pro/Player](https://www.vmware.com/products/workstation-pro.html)
+  ou [VirtualBox](https://www.virtualbox.org/wiki/Downloads) (un seul à la fois)
 - [Vagrant](https://www.vagrantup.com/downloads) (version 2.2.19 ou supérieure)
 - Au moins 8 Go de RAM disponible
 - Au moins 20 Go d'espace disque libre
@@ -28,7 +30,8 @@ Ce dépôt contient les fichiers nécessaires pour créer un environnement Vagra
    vagrant up --provider=virtualbox
    ```
 
-   Cette commande peut prendre 15 à 30 minutes lors de la première exécution car elle télécharge et installe tous les outils et applications nécessaires.
+   Cette commande peut prendre 15 à 30 minutes lors de la première exécution car elle télécharge et installe tous les
+   outils et applications nécessaires.
 
 3. Une fois l'installation terminée, vous pouvez vous connecter à la VM :
    ```bash
@@ -46,20 +49,25 @@ Ce dépôt contient les fichiers nécessaires pour créer un environnement Vagra
 Cette configuration de lab met l'accent sur cinq outils essentiels pour l'analyse des vulnérabilités OWASP Top 10 :
 
 ### 1. SonarQube (Analyse statique de code)
+
 - **Description** : Détecte les vulnérabilités dans le code source via l'analyse statique
 - **Accès** : http://localhost:9000 (admin/admin)
 - **Commande rapide** : `sonarqube-web`
-- **Utilisation typique** : Analyse de projets Java, JavaScript, Python pour détecter des injections, problèmes cryptographiques, etc.
+- **Utilisation typique** : Analyse de projets Java, JavaScript, Python pour détecter des injections, problèmes
+  cryptographiques, etc.
 - **Guide** : `/home/vagrant/docs/guides/SonarQube_Guide.md`
 
 ### 2. Burp Suite (Tests de pénétration web)
+
 - **Description** : Outil complet pour l'interception, l'analyse et la manipulation du trafic HTTP/HTTPS
-- **Lancement** : Menu Applications > Web Application Analysis > burpsuite
-- **Alternative** : Commande `burpsuite` ou `burpsuite_launcher`
-- **Utilisation typique** : Tests d'injection, analyse des contrôles d'accès, détection de vulnérabilités dans les applications web
+- **Installation** : Lancer le script `burpsuite_launcher`
+- **Lancement** : Recherchez "Burp Suite" dans le menu des applications
+- **Utilisation typique** : Tests d'injection, analyse des contrôles d'accès, détection de vulnérabilités dans les
+  applications web
 - **Guide** : `/home/vagrant/docs/guides/BurpSuite_Guide.md`
 
 ### 3. Nessus Expert (Scans de vulnérabilités)
+
 - **Accès** : https://localhost:8834
 - **Commande rapide** : `nessus-web`
 - **Gestion** : `nessus-start`, `nessus-stop`, `nessus-status`
@@ -67,17 +75,19 @@ Cette configuration de lab met l'accent sur cinq outils essentiels pour l'analys
 - **Guide** : `/home/vagrant/docs/guides/Nessus_Guide.md`
 
 ### 4. Ghidra (Analyse de binaires)
+
 - **Description** : Outil d'ingénierie inverse pour l'analyse des binaires
-- **Lancement** : Menu Applications > Reverse Engineering > ghidra
-- **Alternative** : Commande `ghidra` ou `ghidra_launcher`
+- **Lancement** : Commande `ghidra`
 - **Utilisation typique** : Détection des vulnérabilités dans le code compilé
 - **Guide** : `/home/vagrant/docs/guides/Ghidra_Guide.md`
 
 ### 5. MobSF (Sécurité mobile)
+
 - **Description** : Framework d'analyse de sécurité pour applications mobiles
 - **Accès** : http://localhost:8000
 - **Commande rapide** : `mobsf-web`
-- **Utilisation typique** : Analyse statique et dynamique d'applications Android/iOS, détection des vulnérabilités OWASP Mobile
+- **Utilisation typique** : Analyse statique et dynamique d'applications Android/iOS, détection des vulnérabilités OWASP
+  Mobile
 - **Guide** : `/home/vagrant/docs/guides/MobSF_Guide.md`
 
 ## Applications vulnérables pour les tests
@@ -91,9 +101,11 @@ Cette configuration de lab met l'accent sur cinq outils essentiels pour l'analys
 
 ## Structure des exercices
 
-Les exercices sont organisés selon les 10 catégories de l'OWASP Top 10. Pour chaque catégorie, des exercices pratiques sont proposés impliquant l'utilisation des différents outils installés.
+Les exercices sont organisés selon les 10 catégories de l'OWASP Top 10. Pour chaque catégorie, des exercices pratiques
+sont proposés impliquant l'utilisation des différents outils installés.
 
 Le document complet des exercices est disponible dans la VM à l'emplacement :
+
 ```
 /home/vagrant/exercises/exercices_owasp_top_10.md
 ```
@@ -101,6 +113,7 @@ Le document complet des exercices est disponible dans la VM à l'emplacement :
 ## Commandes utiles
 
 ### Gestion des services
+
 - `start_services` : Démarrer tous les services Docker
 - `stop_services` : Arrêter tous les services Docker
 - `status` : Afficher l'état des services Docker
@@ -108,22 +121,25 @@ Le document complet des exercices est disponible dans la VM à l'emplacement :
 - `restart_dvwa` : Redémarrer uniquement le conteneur DVWA
 
 ### Lancement des outils
-- `burpsuite-lab` ou `burpsuite` : Lancer Burp Suite (version intégrée à Kali)
-- `burpsuite_launcher` : Lancer Burp Suite avec le script personnalisé
-- `ghidra_launcher` : Lancer Ghidra avec Java configuré
+
+- `burpsuite` : Saisir Burp Suite dans la recherche d'applications
+- `ghidra` : Lancer Ghidra
 
 ### Contrôle de Nessus
+
 - `nessus-start` : Démarrer le service Nessus
 - `nessus-stop` : Arrêter le service Nessus
 - `nessus-status` : Vérifier le statut du service Nessus
 - `nessus-web` : Ouvrir l'interface web de Nessus dans le navigateur
 
 ### Vérification des services
+
 - `sonarqube-status` : Vérifier si SonarQube est en cours d'exécution
 - `mobsf-status` : Vérifier si MobSF est en cours d'exécution
 - `nodegoat-status` : Vérifier si NodeGoat est en cours d'exécution
 
 ### Accès aux applications web
+
 - `webgoat-web` : Ouvrir WebGoat dans le navigateur
 - `webwolf-web` : Ouvrir WebWolf dans le navigateur
 - `juiceshop-web` : Ouvrir OWASP Juice Shop dans le navigateur
@@ -134,6 +150,7 @@ Le document complet des exercices est disponible dans la VM à l'emplacement :
 - `mobsf-web` : Ouvrir MobSF dans le navigateur
 
 ### Consultation des logs
+
 - `webgoat-logs` : Afficher les logs de WebGoat en temps réel
 - `juiceshop-logs` : Afficher les logs de Juice Shop en temps réel
 - `dvwa-logs` : Afficher les logs de DVWA en temps réel
@@ -141,6 +158,7 @@ Le document complet des exercices est disponible dans la VM à l'emplacement :
 - `nodegoat-logs` : Afficher les logs de NodeGoat en temps réel
 
 ### Documentation
+
 - `guides` : Lister les guides disponibles
 - `show-guide [nom]` : Afficher un guide spécifique (ex: `show-guide BurpSuite_Guide.md`)
 

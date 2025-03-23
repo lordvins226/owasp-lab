@@ -2,21 +2,16 @@
 
 echo "Installation des applications vulnérables pour les labs OWASP Top 10 sur Kali Linux..."
 
-# Définition des variables
 LAB_HOME="/home/vagrant"
 LABS_DIR="$LAB_HOME/labs"
 DATA_DIR="$LAB_HOME/data"
+NODEGOAT_DIR="$LABS_DIR/apps/NodeGoat"
 
-# Création des répertoires nécessaires
 mkdir -p $LABS_DIR/apps
 mkdir -p $LABS_DIR/java-app
 mkdir -p $LABS_DIR/mobile
 mkdir -p $LABS_DIR/binaries
-mkdir -p $DATA_DIR/nodegoat-db
 mkdir -p $DATA_DIR/mobsf
-
-# Configurer les permissions pour MongoDB
-chmod -R 777 $DATA_DIR/nodegoat-db
 
 # Créer un répertoire pour les fichiers docker-compose
 mkdir -p $LABS_DIR/apps
@@ -37,29 +32,10 @@ EOF
 
 # NodeGoat
 echo "Configuration de NodeGoat..."
-cat > $LABS_DIR/apps/docker-compose-nodegoat.yml << 'EOF'
-version: '3'
-services:
-  web:
-    build:
-      context: https://github.com/OWASP/NodeGoat.git
-    container_name: nodegoat
-    ports:
-      - "4000:4000"
-    environment:
-      - MONGODB_URI=mongodb://mongo:27017/nodegoat
-    depends_on:
-      - mongo
-    restart: unless-stopped
-  mongo:
-    image: mongo:4.4
-    container_name: mongo-nodegoat
-    ports:
-      - "27017:27017"
-    volumes:
-      - /home/vagrant/data/nodegoat-db:/data/db
-    restart: unless-stopped
-EOF
+if [ ! -d "$NODEGOAT_DIR" ]; then
+  echo "Clonage du dépôt NodeGoat..."
+  git clone --depth 1 https://github.com/OWASP/NodeGoat.git "$NODEGOAT_DIR"
+fi
 
 # Téléchargement d'échantillons pour les tests
 echo "Téléchargement d'échantillons pour les tests..."
@@ -78,6 +54,9 @@ fi
 if [ ! -f "UnCrackable-Level2.apk" ]; then
     wget -q "https://github.com/OWASP/owasp-mstg/raw/master/Crackmes/Android/Level_02/UnCrackable-Level2.apk" -O UnCrackable-Level2.apk
 fi
+if [ ! -f "diva-beta.apk" ]; then
+    wget -q "https://raw.githubusercontent.com/tjunxiang92/Android-Vulnerabilities/refs/heads/master/diva-beta.apk"
+fi
 
 # Binaires vulnérables pour Ghidra
 cd $LABS_DIR/binaries
@@ -90,12 +69,24 @@ if [ ! -f "lab2A" ]; then
     chmod +x lab2A
 fi
 
+# Nettoyage des conteneurs existants
+echo "Nettoyage des conteneurs existants..."
+docker stop webgoat dvwa juice-shop nodegoat mongo 2>/dev/null
+docker rm webgoat dvwa juice-shop nodegoat mongo 2>/dev/null
 
-# Démarrage des applications avec Docker Compose
-echo "Démarrage de Juice Shop et NodeGoat avec Docker Compose..."
+# Démarrage des applications
+echo "Démarrage des applications vulnérables..."
+
+# Démarrage de Juice Shop
 cd $LABS_DIR/apps
 docker-compose -f docker-compose-juiceshop.yml up -d
-docker-compose -f docker-compose-nodegoat.yml up -d
+
+# Démarrage de NodeGoat
+cd $NODEGOAT_DIR
+echo "Construction des images NodeGoat..."
+docker-compose build
+echo "Démarrage de NodeGoat..."
+docker-compose up -d
 
 # Démarrage de WebGoat
 echo "Démarrage de WebGoat..."
@@ -111,11 +102,6 @@ echo "Démarrage de DVWA..."
 docker run -d --name dvwa \
   -p 8888:80 \
   kaakaww/dvwa-docker:latest
-
-# Initialisation de la base de données NodeGoat
-echo "Initialisation de la base de données NodeGoat..."
-sleep 10  # Attendre que la base démarre complètement
-docker exec nodegoat npm run db:seed 2>/dev/null || echo "NodeGoat seed failed - will retry on next startup"
 
 # Correction des permissions
 chown -R vagrant:vagrant $LABS_DIR
