@@ -67,7 +67,7 @@ echo "Téléchargement d'échantillons pour les tests..."
 # Application Java vulnérable pour SonarQube
 cd $LABS_DIR/java-app
 if [ ! -d "benchmark" ]; then
-    git clone --depth 1 https://github.com/OWASP/benchmark.git
+    git clone --depth 1 https://github.com/OWASP-Benchmark/BenchmarkJava.git
 fi
 
 # Fichiers APK pour MobSF

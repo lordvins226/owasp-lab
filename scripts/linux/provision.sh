@@ -46,13 +46,13 @@ mkdir -p $GUIDES_DIR
 
 # Exécution des scripts d'installation
 echo "Étape 1: Installation des applications vulnérables"
-bash /vagrant/scripts/install_apps.sh
+bash /vagrant/scripts/linux/install_apps.sh
 
 echo "Étape 2: Installation des outils de sécurité additionnels"
-bash /vagrant/scripts/install_tools.sh
+bash /vagrant/scripts/linux/install_tools.sh
 
 echo "Étape 3: Configuration de l'environnement"
-bash /vagrant/scripts/setup_environment.sh
+bash /vagrant/scripts/linux/setup_environment.sh
 
 sed -i 's/XKBLAYOUT=".*"/XKBLAYOUT="us"/' /etc/default/keyboard
 udevadm trigger --subsystem-match=input --action=change

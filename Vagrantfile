@@ -81,19 +81,15 @@ Vagrant.configure("2") do |config|
   # Synchronisation des dossiers
   config.vm.synced_folder "guides/", "/home/vagrant/docs/guides", create: true
   config.vm.synced_folder "exercises/", "/home/vagrant/exercises", create: true
-  config.vm.synced_folder "configs/", "/home/vagrant/configs", create: true
 
   # Désactiver les redémarrages automatiques des services avant toute installation
   config.vm.provision "shell", inline: <<-SHELL
-    # Configuration pour éviter les blocages pendant l'installation des paquets
     export DEBIAN_FRONTEND=noninteractive
 
-    # Désactiver les redémarrages de services pendant le provisionnement
     echo '#!/bin/sh' > /usr/sbin/policy-rc.d
     echo 'exit 101' >> /usr/sbin/policy-rc.d
     chmod +x /usr/sbin/policy-rc.d
 
-    # Configuration de apt pour éviter les questions interactives
     echo 'DPkg::options { "--force-confdef"; "--force-confold"; }' > /etc/apt/apt.conf.d/local
     echo 'Dpkg::Use-Pty "0";' >> /etc/apt/apt.conf.d/local
 
@@ -104,7 +100,7 @@ Vagrant.configure("2") do |config|
     echo "Configuration du système pour éviter les blocages pendant le provisionnement..."
   SHELL
 
-  config.vm.provision "shell", path: "scripts/provision.sh"
+  config.vm.provision "shell", path: "scripts/linux/provision.sh"
 
   # Restaurer le comportement normal des services après le provisionnement
   config.vm.provision "shell", inline: <<-SHELL

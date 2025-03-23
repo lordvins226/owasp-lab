@@ -40,12 +40,16 @@ alias dvwa-logs='docker logs -f dvwa'
 alias mobsf-logs='docker logs -f mobsf_app'
 alias nodegoat-logs='docker logs -f nodegoat'
 
-# Ouverture rapide de Nessus dans le navigateur
+# Ouverture rapide des applications web dans le navigateur
 alias nessus-web='xdg-open https://localhost:8834'
-
-# Ouverture rapide de NodeGoat dans le navigateur
+alias webgoat-web='xdg-open http://localhost:8081/WebGoat'
+alias webwolf-web='xdg-open http://localhost:9090/WebWolf'
+alias juiceshop-web='xdg-open http://localhost:3000'
+alias dvwa-web='xdg-open http://localhost:8888'
 alias nodegoat-web='xdg-open http://localhost:4000'
 alias nodegoat-tutorial='xdg-open http://localhost:4000/tutorial'
+alias sonarqube-web='xdg-open http://localhost:9000'
+alias mobsf-web='xdg-open http://localhost:8000'
 
 # Fonction pour démarrer tous les services
 function start_all_services() {
